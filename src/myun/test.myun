@@ -1,0 +1,57 @@
+// This is a simple function
+foo(x, y, z)
+    z = z + x*y
+    if z is 5 then
+        z = 0
+    end
+    return z
+end
+
+/*
+ This one has branches.
+ */
+bar(a, b)
+    if a then
+        return 1
+    elseif not b >= 4-b^2 and b < 10 then
+        return 2.0
+    else
+        return false
+    end
+    z = z
+end
+
+// hmm a loop!
+hmm()
+    while dunno() do
+        return 2
+    end
+    return 0
+end
+
+/*
+ * This is a script.
+ * It will be executed someday, hopefully.
+ */
+script test
+    while (x > 10) do
+        y = ((2 ^ 2) * (3 ^ 5))
+        z = (((x * (y ^ 2)) - (x / y)) mod 3)
+        x = (x - 1)
+    end
+
+    b1 = (false or ((z is (5 + 3)) and (y <= 3.0)))
+
+    for i from 1 to 10 do
+        if ((i mod 2) is 0) then
+            z = 0
+        else
+            z = 1
+            break
+        end
+    end
+
+    blubb = foo(4, x, true)
+    barub = bar()
+    barlubb = foo(bar(), barub(5, foo(7.0)))
+end

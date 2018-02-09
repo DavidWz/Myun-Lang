@@ -1,0 +1,105 @@
+/*
+The following functions are natively defined in the core language:
+not::Boolean->Boolean
+and::(Boolean, Boolean)->Boolean
+or::(Boolean, Boolean)->Boolean
+is::(T, T)->Boolean
+isLess::(T, T)->Boolean
+isLessEq::(T, T)->Boolean
+isGreater::(T, T)->Boolean
+isGreaterEq::(T, T)->Boolean
+plus::(T, T)->T
+minus::(T, T)->T
+mult::(T, T)->T
+div::(T, T)->T
+exp::(T, T)->T
+mod::(Integer, Integer)->Integer
+
+with T = Integer or Float
+*/
+
+/*
+ * Simple function which calculates the sum of squares.
+ * 1. addMult::(X, Y)->Z
+ * 2.1. mult(X, X)->A => X=int, A=int
+ *   2. mult(Y, Y)->B => Y=int, B=int
+ *   2.1 plus(int,int)->Z => Z=int
+ *       generate: addMult::(int, int)->int
+ *   2.2 plus(int,float)->Z
+ *       not found
+ * 2.2. mult(X, X)->A => X=float, A=float
+ *   2.1 etc etc
+ *
+ * final result:
+ * 1. addMult::(int, int)->int
+ * 2. addMult::(float, float)->float
+ */
+addMult(x, y)
+    return x*x+y*y
+end
+
+/*
+ * foo::(boolean, int)->int
+ */
+foo(x, y)
+    if x then
+        y = y*2
+    else
+        y = y/2
+    end
+    return y+2
+end
+
+/*
+ * type error
+ */
+bar(z)
+    return foo(z, z)
+end
+
+/*
+ * Add a definition for plus.
+ * plus::(boolean, int)->int
+ */
+plus(shouldIncrease, x)
+    if shouldIncrease then
+        return x+1
+    else
+        return x
+    end
+end
+
+/*
+ * Recursive function.
+ * 1. fib::(int, int)->int
+ * 2. fib::(float, float)->float
+ */
+fib(n, one)
+    if n <= one+one then
+        return one
+    else
+        return fib(n-one-one, one)+fib(n-one, one)
+    end
+end
+
+/*
+ * Cyclic functions.
+ * Type cannot be inferred. error
+ */
+isEven(x, one)
+    if x is one-one or x is one then
+        return one-x
+    else
+        return one-isOdd(x-one, one)
+    end
+end
+isOdd(x, one)
+    if x is one or x is one-one then
+        return x
+    else
+        return one-isEven(x-one, one)
+    end
+end
+
+script typeTest
+end
