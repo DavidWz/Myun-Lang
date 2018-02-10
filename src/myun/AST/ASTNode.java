@@ -1,11 +1,17 @@
 package myun.AST;
 
+import myun.scope.Scope;
+
 /**
  * Most general AST node.
  */
 public abstract class ASTNode {
+    // position in source code
     protected int lineNumber;
     protected int charPositionInLine;
+
+    // scope to which this node belongs
+    protected Scope scope;
 
     /**
      * Creates a new AST node.
@@ -15,6 +21,7 @@ public abstract class ASTNode {
     public ASTNode(int lineNumber, int charPositionInLine) {
         this.lineNumber = lineNumber;
         this.charPositionInLine = charPositionInLine;
+        this.scope = null;
     }
 
     /**
@@ -29,6 +36,14 @@ public abstract class ASTNode {
      */
     public int getCharPositionInLine() {
         return charPositionInLine;
+    }
+
+    public Scope getScope() {
+        return scope;
+    }
+
+    public void setScope(Scope scope) {
+        this.scope = scope;
     }
 
     /**

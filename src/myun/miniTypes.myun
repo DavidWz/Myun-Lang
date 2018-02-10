@@ -1,5 +1,23 @@
+funcDef(x::Int, y::Int)::Int
+    b = x+y
+    z = x*y
+    return b+z
+end
+
+funcDef(n::Int)::Int
+    sum = 0
+    for i from 1 to n do
+        sum = sum + i
+    end
+    for i from 1 to n do
+        sum = sum + i
+    end
+    return funcDef(sum/2)
+end
+
 script miniTypes
     x = 5
     b = true
     y = 5.0
+    z = funcDef(x)
 end

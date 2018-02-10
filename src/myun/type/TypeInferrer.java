@@ -1,244 +1,228 @@
 package myun.type;
 
 import myun.AST.*;
+import myun.scope.IllegalRedefineException;
+import myun.scope.UndeclaredFunctionCalledException;
+import myun.scope.UndeclaredVariableUsedException;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
  * Infers types of expressions and functions.
  */
-public class TypeInferrer /*implements ASTVisitor<Boolean>*/ {
-    // storing the two types that mismatch (in case there is a mismatch)
-    private ASTType mismatchFirst;
-    private ASTType mismatchSecond;
+public class TypeInferrer implements ASTVisitor<Void> {
 
     public TypeInferrer() {
-        this.mismatchFirst = null;
-        this.mismatchSecond = null;
+
     }
 
-    /**
-     * Tries to infer the types in the given AST structure.
-     * Throws an exception if it finds type errors.
-     *
-     * @param node the ast node
-     * @throws TypeMismatchException thrown when two types mismatch
-     */
     public void inferTypes(ASTNode node) throws TypeMismatchException {
-        this.mismatchFirst = null;
-        this.mismatchSecond = null;
-
-        /*if(!node.accept(this)) {
-            throw new TypeMismatchException(mismatchFirst, mismatchSecond);
-        }*/
+        node.accept(this);
     }
 
-    /**
-     * Tries to set the given new type for to the given expression.
-     * If the expression does not have a type yet, it will simply be set.
-     * If it does have a type already, it will only be set when the types match.
-     * Otherwise and exception is thrown.
-     *
-     * @param expr the expression
-     * @param type the new type
-     * @return true iff the update was successful
-     */
-    private boolean tryUpdateType(ASTExpression expr, ASTType type)  {
-        if (expr.getType().isPresent()) {
-            // since we do not have inheritance, we can simply check for equality
-            if (expr.getType().get().equals(type)) {
-                return true;
+
+    @Override
+    public Void visit(ASTAssignment node) {
+        // determine the type of the expression
+        node.getExpr().accept(this);
+        ASTType exprType = node.getExpr().getType().orElseThrow(() -> new CouldNotInferTypeException(node.getExpr()));
+
+        // we need to differentiate between variable declaration and assignment
+        if (node.getScope().containsVariable(node.getVariable())) {
+            // this variable already exists, so make sure the types match
+            ASTType varType = node.getScope().getVariableType(node.getVariable()).orElseThrow(() -> new CouldNotInferTypeException(node.getVariable()));
+            if (varType.equals(exprType)) {
+                node.getVariable().setType(varType);
             }
             else {
-                this.mismatchFirst = expr.getType().get();
-                this.mismatchSecond = type;
-                return false;
+                throw new TypeMismatchException(exprType, varType);
             }
         }
         else {
-            expr.setType(type);
-            return true;
-        }
-    }
-
-    /*@Override
-    public Boolean visit(ASTAssignment node) {
-        // first infer the type of the expression
-        if(!node.getExpr().accept(this)) {
-            return false;
-        }
-        ASTType exprType = node.getExpr().getType().get();
-
-        // if this is a new variable, register it at the current scope
-        if (!node.getVariable().getType().isPresent()) {
-            node.getScope().setType(node.getVariable(), exprType);
-            tryUpdateType(node.getVariable(), exprType);
-        }
-        // variable already exists, the value will be overwritten
-        else {
-
+            // this variable does not exist yet, so create it
+            node.getScope().declareVariable(node.getVariable(), exprType);
+            node.getVariable().setType(exprType);
         }
 
-
-        // then try to update the type of the assigned variable
-        if (exprType.isPresent() && tryUpdateType(node.getVariable(), exprType.get())) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-    @Override
-    public Boolean visit(ASTBasicType node) {
-        return true;
-    }
-
-    @Override
-    public Boolean visit(ASTBlock node) {
-        return node.getStatements().stream().allMatch(stmt -> stmt.accept(this));
-    }
-
-    @Override
-    public Boolean visit(ASTBoolean node) {
-        ASTBasicType type = new ASTBasicType(node.getLine(), node.getCharPositionInLine(), PrimitiveTypes.BOOL);
-        return tryUpdateType(node, type);
-    }
-
-    @Override
-    public Boolean visit(ASTBranch node) {
-        // infer types of expressions and check if they match with the Bool type
-        boolean areConditionsBool = node.getConditions().stream().allMatch(condition -> {
-           if (condition.accept(this)) {
-               return tryUpdateType(condition,
-                       new ASTBasicType(condition.getLine(), condition.getCharPositionInLine(), PrimitiveTypes.BOOL));
-           }
-           else {
-               return false;
-           }
-        });
-
-        if (!areConditionsBool) {
-            return false;
-        }
-
-        // next, let the inferrer work on the blocks
-        return node.getBlocks().stream().allMatch(block -> block.accept(this));
-    }
-
-    @Override
-    public Boolean visit(ASTCompileUnit node) {
-        if(node.getFuncDefs().stream().allMatch(funcDef -> funcDef.accept(this))) {
-            return node.getScript().accept(this);
-        }
-        else {
-            return false;
-        }
-    }
-
-    @Override
-    public Boolean visit(ASTFloat node) {
-        ASTBasicType type = new ASTBasicType(node.getLine(), node.getCharPositionInLine(), PrimitiveTypes.FLOAT);
-        return tryUpdateType(node, type);
-    }
-
-    @Override
-    public Boolean visit(ASTForLoop node) {
-        // infer types of the from and to expressions
-        if (!node.getFrom().accept(this) || !node.getTo().accept(this)) {
-            return false;
-        }
-
-        // match them with the integer type
-        if (!tryUpdateType(node.getFrom(), new ASTBasicType(node.getFrom().getLine(), node.getFrom().getCharPositionInLine(), PrimitiveTypes.INT))) {
-            return false;
-        }
-
-        if (!tryUpdateType(node.getTo(), new ASTBasicType(node.getTo().getLine(), node.getTo().getCharPositionInLine(), PrimitiveTypes.INT))) {
-            return false;
-        }
-
-        // match the variable with the integer type
-        ASTVariable var = node.getVariable();
-        if (!var.accept(this)) {
-            return false;
-        }
-        if (!tryUpdateType(var, new ASTBasicType(var.getLine(), var.getCharPositionInLine(), PrimitiveTypes.INT))) {
-            return false;
-        }
-
-        // infer the types in the block
-        return node.getBlock().accept(this);
-    }
-
-    @Override
-    public Boolean visit(ASTFuncCall node) {
-        // infer the types of the arguments
-        if (node.getArgs().stream().anyMatch(arg -> !arg.accept(this))) {
-            return false;
-        }
-
-        // try to find this function and determine the result type
-        List<ASTType> argTypes = node.getArgs().stream().map(arg -> arg.getType().get()).collect(Collectors.toList());
-        Optional<ASTType> resultType = node.getScope().getType(node.getFunction(), argTypes);
-        return (resultType.isPresent() && tryUpdateType(node, resultType.get()));
-    }
-
-    @Override
-    public Boolean visit(ASTFuncDef node) {
-        // TODO
         return null;
     }
 
     @Override
-    public Boolean visit(ASTFuncReturn node) {
-        return node.getExpr().accept(this);
+    public Void visit(ASTBasicType node) {
+        return null;
     }
 
     @Override
-    public Boolean visit(ASTFuncType node) {
-        return true;
+    public Void visit(ASTBlock node) {
+        node.getStatements().forEach(stmt -> stmt.accept(this));
+        node.getFuncReturn().ifPresent(fR -> fR.accept(this));
+        return null;
     }
 
     @Override
-    public Boolean visit(ASTInteger node) {
-        ASTBasicType type = new ASTBasicType(node.getLine(), node.getCharPositionInLine(), PrimitiveTypes.INT);
-        return tryUpdateType(node, type);
+    public Void visit(ASTBoolean node) {
+        ASTBasicType boolType = new ASTBasicType(node.getLine(), node.getCharPositionInLine(), PrimitiveTypes.BOOL);
+        node.setType(boolType);
+        return null;
     }
 
     @Override
-    public Boolean visit(ASTLoopBreak node) {
-        return true;
+    public Void visit(ASTBranch node) {
+        // make sure the conditions are of type boolean
+        node.getConditions().forEach(cond -> {
+            cond.accept(this);
+            ASTBasicType boolType = new ASTBasicType(cond.getLine(), cond.getCharPositionInLine(), PrimitiveTypes.BOOL);
+            ASTType condType = cond.getType().orElseThrow(() -> new CouldNotInferTypeException(cond));
+            if (!boolType.equals(condType)) {
+                throw new TypeMismatchException(condType, boolType);
+            }
+        });
+
+        // then infer the types in the blocks
+        node.getBlocks().forEach(b -> b.accept(this));
+
+        return null;
     }
 
     @Override
-    public Boolean visit(ASTScript node) {
-        return node.getBlock().accept(this);
+    public Void visit(ASTCompileUnit node) {
+        node.getFuncDefs().forEach(funcDef -> funcDef.accept(this));
+        node.getScript().accept(this);
+        return null;
     }
 
     @Override
-    public Boolean visit(ASTVariable node) {
-        Optional<ASTType> type = node.getScope().getType(node);
-        return (type.isPresent() && tryUpdateType(node, type.get()));
+    public Void visit(ASTFloat node) {
+        ASTBasicType floatType = new ASTBasicType(node.getLine(), node.getCharPositionInLine(), PrimitiveTypes.FLOAT);
+        node.setType(floatType);
+        return null;
     }
 
     @Override
-    public Boolean visit(ASTWhileLoop node) {
-        ASTExpression cond = node.getCondition();
-
-        // infer the type of the expression
-        if (!cond.accept(this)) {
-            return false;
+    public Void visit(ASTForLoop node) {
+        // make sure the variable is not defined yet
+        if (node.getVariable().getScope().containsVariable(node.getVariable())) {
+            ASTVariable originalVar = node.getVariable().getScope().getFirstDeclaredVariable(node.getVariable()).
+                    orElseThrow(() -> new RuntimeException("Scope returned empty optional even though containsVariable method returned true."));
+            throw new IllegalRedefineException(node.getVariable().getName(), originalVar, node.getVariable());
         }
 
-        // and make sure it is a boolean
-        if (!tryUpdateType(cond, new ASTBasicType(cond.getLine(), cond.getCharPositionInLine(), PrimitiveTypes.BOOL))) {
-            return false;
+        // define that variable in the scope
+        ASTBasicType varIntType = new ASTBasicType(node.getVariable().getLine(), node.getVariable().getCharPositionInLine(), PrimitiveTypes.INT);
+        node.getVariable().setType(varIntType);
+        node.getVariable().getScope().declareVariable(node.getVariable(), varIntType);
+
+        // make sure from and to expressions are of type int
+        node.getFrom().accept(this);
+        node.getTo().accept(this);
+        ASTType fromType = node.getFrom().getType().orElseThrow(() -> new CouldNotInferTypeException(node.getFrom()));
+        ASTType toType = node.getTo().getType().orElseThrow(() -> new CouldNotInferTypeException(node.getTo()));
+
+        ASTBasicType fromIntType = new ASTBasicType(node.getFrom().getLine(), node.getFrom().getCharPositionInLine(), PrimitiveTypes.INT);
+        ASTBasicType toIntType = new ASTBasicType(node.getTo().getLine(), node.getTo().getCharPositionInLine(), PrimitiveTypes.INT);
+
+        if (!fromIntType.equals(fromType)) {
+            throw new TypeMismatchException(fromType, fromIntType);
+        }
+        if (!toIntType.equals(toType)) {
+            throw new TypeMismatchException(toType, toIntType);
         }
 
-        // infer the types in the block
-        return node.getBlock().accept(this);
-    }*/
+        // finally, infer the types in the block
+        node.getBlock().accept(this);
+        return null;
+    }
+
+    @Override
+    public Void visit(ASTFuncCall node) {
+        node.getArgs().forEach(arg -> arg.accept(this));
+
+        // ask the scope for the type
+        List<ASTType> paramTypes = node.getArgs().stream().
+                map(arg -> arg.getType().orElseThrow(() -> new CouldNotInferTypeException(arg))).
+                collect(Collectors.toList());
+        ASTType returnType = node.getScope().getReturnType(node.getFunction().getName(), paramTypes).
+                orElseThrow(() -> new UndeclaredFunctionCalledException(node, paramTypes));
+        node.setType(returnType);
+
+        return null;
+    }
+
+    @Override
+    public Void visit(ASTFuncDef node) {
+        // make the parameter types known to the scope
+        node.getParameters().forEach(param -> {
+            if (!param.getType().isPresent()) {
+                throw new RuntimeException("Type inference is not supported yet!");
+            }
+            param.getScope().declareVariable(param, param.getType().get());
+        });
+
+        // make the function type known to the scope
+        if (!node.getReturnType().isPresent()) {
+            throw new RuntimeException("Type inference is not supported yet!");
+        }
+        ASTFuncType funcType = new ASTFuncType(node.getLine(), node.getCharPositionInLine(),
+                node.getParameters().stream().map(param -> param.getType().get()).collect(Collectors.toList()),
+                node.getReturnType().get());
+
+        // we set without check for previously defined function because we want to support redefinition of functions
+        node.getScope().declareFunction(node.getName(), funcType);
+
+        // do type inference in the function body
+        node.getBlock().accept(this);
+
+        // check if all the return expression types match the actual return type
+        ReturnTypeAccumulator returnTypeAccumulator = new ReturnTypeAccumulator();
+        ASTType returnExprType = returnTypeAccumulator.getReturnExpressionType(node);
+        if (!node.getReturnType().get().equals(returnExprType)) {
+            throw new TypeMismatchException(returnExprType, node.getReturnType().get());
+        }
+
+        return null;
+    }
+
+    @Override
+    public Void visit(ASTFuncReturn node) {
+        node.getExpr().accept(this);
+        return null;
+    }
+
+    @Override
+    public Void visit(ASTFuncType node) {
+        return null;
+    }
+
+    @Override
+    public Void visit(ASTInteger node) {
+        ASTBasicType intType = new ASTBasicType(node.getLine(), node.getCharPositionInLine(), PrimitiveTypes.INT);
+        node.setType(intType);
+        return null;
+    }
+
+    @Override
+    public Void visit(ASTLoopBreak node) {
+        return null;
+    }
+
+    @Override
+    public Void visit(ASTScript node) {
+        node.getBlock().accept(this);
+        return null;
+    }
+
+    @Override
+    public Void visit(ASTVariable node) {
+        // ask the scope for the type
+        node.setType(node.getScope().getVariableType(node).orElseThrow(() -> new UndeclaredVariableUsedException(node)));
+        return null;
+    }
+
+    @Override
+    public Void visit(ASTWhileLoop node) {
+        node.getCondition().accept(this);
+        node.getBlock().accept(this);
+        return null;
+    }
 }

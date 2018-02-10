@@ -6,15 +6,15 @@ import myun.AST.MyunPrettyPrinter;
 /**
  * Exception thrown when two types mismatch.
  */
-public class TypeMismatchException extends Exception {
-    private ASTType first;
-    private ASTType second;
+public class TypeMismatchException extends RuntimeException {
+    private ASTType actual;
+    private ASTType expected;
     private MyunPrettyPrinter prettyPrinter;
 
-    public TypeMismatchException(ASTType first, ASTType second) {
+    public TypeMismatchException(ASTType actual, ASTType expected) {
         super();
-        this.first = first;
-        this.second = second;
+        this.actual = actual;
+        this.expected = expected;
         this.prettyPrinter = new MyunPrettyPrinter();
     }
 
@@ -22,10 +22,9 @@ public class TypeMismatchException extends Exception {
     public String getMessage() {
         StringBuilder errorMsg = new StringBuilder();
         errorMsg.append("Type Error: Types Mismatch.\n");
-        errorMsg.append(first.accept(prettyPrinter));
-        errorMsg.append(" on line ").append(first.getLine()).append(" at ").append(first.getCharPositionInLine());
-        errorMsg.append(" and ").append(second.accept(prettyPrinter));
-        errorMsg.append(" on line ").append(second.getLine()).append(" at ").append(second.getCharPositionInLine());
+        errorMsg.append("Expected ").append(expected.accept(prettyPrinter));
+        errorMsg.append(" but got ").append(actual.accept(prettyPrinter));
+        errorMsg.append(" on line ").append(actual.getLine()).append(" at ").append(actual.getCharPositionInLine());
         return errorMsg.toString();
     }
 }
