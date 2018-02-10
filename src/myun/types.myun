@@ -18,6 +18,11 @@ mod::(Integer, Integer)->Integer
 with T = Integer or Float
 */
 
+/* Function that returns 42 */
+fortyTwo()
+    return 42
+end
+
 /*
  * Simple function which calculates the sum of squares.
  * 1. addMult::(X, Y)->Z

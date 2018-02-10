@@ -1,7 +1,5 @@
 package myun.AST;
 
-import myun.AST.*;
-
 /**
  * Prints the AST in a readable format.
  */
@@ -41,6 +39,11 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
         sb.append("\n");
 
         return sb.toString();
+    }
+
+    @Override
+    public String visit(ASTBasicType node) {
+        return node.getName();
     }
 
     @Override
@@ -144,8 +147,10 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
                 sb.append(", ");
             }
         }
-        sb.append(")\n");
-        sb.append(node.getBlock().accept(this));
+        sb.append(")");
+        node.getReturnType().ifPresent(type -> sb.append("::").append(type.accept(this)));
+
+        sb.append("\n").append(node.getBlock().accept(this));
         indent(sb);
         sb.append("end\n");
         return sb.toString();
@@ -156,6 +161,26 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
         StringBuilder sb = new StringBuilder();
         indent(sb);
         sb.append("return ").append(node.getExpr().accept(this)).append("\n");
+        return sb.toString();
+    }
+
+    @Override
+    public String visit(ASTFuncType node) {
+        StringBuilder sb = new StringBuilder();
+        if (node.getParameterTypes().size() == 0) {
+            sb.append("()");
+        }
+        else if (node.getParameterTypes().size() == 1) {
+            sb.append(node.getParameterTypes().get(0).accept(this));
+        }
+        else {
+            sb.append("(").append(node.getParameterTypes().get(0).accept(this));
+            for (int i = 1; i < node.getParameterTypes().size(); i++) {
+                sb.append(", ").append(node.getParameterTypes().get(i).accept(this));
+            }
+            sb.append(")");
+        }
+        sb.append(" -> ").append(node.getReturnType().accept(this));
         return sb.toString();
     }
 
@@ -174,16 +199,15 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
 
     @Override
     public String visit(ASTScript node) {
-        StringBuilder sb = new StringBuilder();
-        sb.append("script ").append(node.getName()).append("\n");
-        sb.append(node.getBlock().accept(this));
-        sb.append("end\n");
-        return sb.toString();
+        return "script " + node.getName() + "\n" + node.getBlock().accept(this) + "end\n";
     }
 
     @Override
     public String visit(ASTVariable node) {
-        return node.getName();
+        StringBuilder sb = new StringBuilder();
+        sb.append(node.getName());
+        node.getType().ifPresent(type -> sb.append("::").append(type.accept(this)));
+        return sb.toString();
     }
 
     @Override

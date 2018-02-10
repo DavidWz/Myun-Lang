@@ -39,10 +39,15 @@ loop
 
 loopBreak: 'break';
 
-/* Function Definition */
+/* Function Definition (params and result can be annotated with a type) */
 funcDef
-    : name=ID '(' (variable (',' variable)*)? ')' block 'end'
+    : name=ID '(' (funcParam (',' funcParam)*)? ')' ('::' returnType=type)?
+        block
+      'end'
     ;
+
+/* Function parameters can be annotated with a type */
+funcParam: variable ('::' type)?;
 
 /* Function Calls */
 funcCall
@@ -51,6 +56,19 @@ funcCall
 
 funcReturn
     : 'return' expr
+    ;
+
+/* Variables */
+variable: name=ID;
+
+/* Types */
+type
+    : '(' type ')'                                         # parenthesisType
+    /* Basic data types */
+    | name=TYPE_ID                                         # basicType
+    /* Function types */
+    | <assoc=right> type '->' type                         # funcType
+    | '(' (type (',' type)*)? ')' '->' type                # funcType
     ;
 
 /* Expressions */
@@ -79,7 +97,6 @@ expr
 bool: value=(BOOL_TRUE | BOOL_FALSE);
 integer: value=NUM_INT;
 floating: value=NUM_FLOAT;
-variable: name=ID;
 
 /* Infix Operators */
 OP_NOT: 'not';
@@ -97,14 +114,15 @@ OP_DIV: '/';
 OP_EXP: '^';
 OP_MOD: 'mod';
 
-/* Basic Data Types */
+/* Basic Data Values */
 BOOL_TRUE: 'true';
 BOOL_FALSE: 'false';
 NUM_INT: [0-9]+;
 NUM_FLOAT: [0-9]+ '.' [0-9]+ ([eE] [+-]? [0-9]+)?;
 
 /* Identifiers */
-ID: [a-zA-Z][a-zA-Z0-9_]*;
+ID: [a-z][a-zA-Z0-9_]*;
+TYPE_ID: [A-Z][a-zA-Z0-9_]*;
 
 /* Ignored whitespaces and comments */
 WS: [ \t\r\n] -> channel(HIDDEN);

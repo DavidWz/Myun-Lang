@@ -24,8 +24,8 @@ public class ASTGenerator {
      *
      * @param fileName the file name
      * @return an AST representing the program code
-     * @throws IOException
-     * @throws ViolatedConstraintException
+     * @throws IOException thrown when the file could not be loaded
+     * @throws ViolatedConstraintException thrown when a constraint is violated
      */
     public ASTCompileUnit parseFile(String fileName) throws IOException, ViolatedConstraintException {
         ANTLRFileStream fileStream;
@@ -38,7 +38,7 @@ public class ASTGenerator {
      *
      * @param charStream the char stream
      * @return an AST representing the program code
-     * @throws ViolatedConstraintException
+     * @throws ViolatedConstraintException thrown when a constraint is violated
      */
     private ASTCompileUnit parse(CharStream charStream) throws ViolatedConstraintException {
         MyunLexer lexer = new MyunLexer(charStream);
@@ -107,20 +107,31 @@ public class ASTGenerator {
         @Override
         public ASTFuncDef visitFuncDef(MyunParser.FuncDefContext ctx) {
             String name = ctx.name.getText();
-            List<ASTVariable> args = ctx.variable().stream().
-                    map(arg -> new ASTVariable(arg.start.getLine(), arg.start.getCharPositionInLine(), arg.getText())).
-                    collect(Collectors.toList());
+
+            List<ASTVariable> params = ctx.funcParam().stream().map(param -> {
+                ASTVariable var = param.variable().accept(new VariableVisitor());
+                if (param.type() != null) {
+                    var.setType(param.type().accept(new TypeVisitor()));
+                }
+                return var;
+            }).collect(Collectors.toList());
+
+            ASTType returnType = null;
+            if (ctx.returnType != null) {
+                returnType = ctx.returnType.accept(new TypeVisitor());
+            }
+
             ASTBlock block = ctx.block().accept(new BlockVisitor());
-            return new ASTFuncDef(ctx.start.getLine(), ctx.start.getCharPositionInLine(), name, args, block);
+
+            return new ASTFuncDef(ctx.start.getLine(), ctx.start.getCharPositionInLine(), name, params, returnType, block);
         }
     }
 
     private static class AssignmentVisitor extends MyunBaseVisitor<ASTAssignment> {
         @Override
         public ASTAssignment visitAssignment(MyunParser.AssignmentContext ctx) {
-            String varID = ctx.variable().getText();
+            ASTVariable var = ctx.variable().accept(new VariableVisitor());
             ASTExpression expr = ctx.expr().accept(new ExprVisitor());
-            ASTVariable var = new ASTVariable(ctx.start.getLine(), ctx.start.getCharPositionInLine(), varID);
             return new ASTAssignment(ctx.start.getLine(), ctx.start.getCharPositionInLine(), var, expr);
         }
     }
@@ -149,9 +160,7 @@ public class ASTGenerator {
 
         @Override
         public ASTForLoop visitForLoop(MyunParser.ForLoopContext ctx) {
-            ASTVariable variable = new ASTVariable(ctx.variable().start.getLine(),
-                    ctx.variable().start.getCharPositionInLine(),
-                    ctx.variable().getText());
+            ASTVariable variable = ctx.variable().accept(new VariableVisitor());
             ASTExpression from = ctx.from.accept(new ExprVisitor());
             ASTExpression to = ctx.to.accept(new ExprVisitor());
             ASTBlock block = ctx.block().accept(new BlockVisitor());
@@ -173,20 +182,16 @@ public class ASTGenerator {
         @Override
         public ASTExpression visitBasic(MyunParser.BasicContext ctx) {
             if (ctx.bool() != null) {
-                String boolID = ctx.bool().getText();
-                boolean value = (boolID.equals("true"));
-                return new ASTBoolean(ctx.start.getLine(), ctx.start.getCharPositionInLine(), value);
+                return new ASTBoolean(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+                        ctx.bool().getText().equals("true"));
             } else if (ctx.integer() != null) {
-                String intID = ctx.integer().getText();
-                int value = Integer.parseInt(intID);
-                return new ASTInteger(ctx.start.getLine(), ctx.start.getCharPositionInLine(), value);
+                return new ASTInteger(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+                        Integer.parseInt(ctx.integer().getText()));
             } else if (ctx.floating() != null) {
-                String floatID = ctx.floating().getText();
-                float value = Float.parseFloat(floatID);
-                return new ASTFloat(ctx.start.getLine(), ctx.start.getCharPositionInLine(), value);
+                return new ASTFloat(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+                        Float.parseFloat(ctx.floating().getText()));
             } else if (ctx.variable() != null) {
-                String varID = ctx.variable().getText();
-                return new ASTVariable(ctx.start.getLine(), ctx.start.getCharPositionInLine(), varID);
+                return ctx.variable().accept(new VariableVisitor());
             } else {
                 // ERROR
                 return null;
@@ -267,13 +272,40 @@ public class ASTGenerator {
     private static class FuncCallVisitor extends MyunBaseVisitor<ASTFuncCall> {
         @Override
         public ASTFuncCall visitFuncCall(MyunParser.FuncCallContext ctx) {
-            ASTVariable var = new ASTVariable(ctx.variable().start.getLine(),
-                    ctx.variable().start.getCharPositionInLine(),
-                    ctx.variable().getText());
+            ASTVariable var = ctx.variable().accept(new VariableVisitor());
             List<ASTExpression> args = ctx.expr().stream().
                     map(arg -> arg.accept(new ExprVisitor())).
                     collect(Collectors.toList());
             return new ASTFuncCall(ctx.start.getLine(), ctx.start.getCharPositionInLine(), var, args);
+        }
+    }
+
+    private static class VariableVisitor extends MyunBaseVisitor<ASTVariable> {
+        @Override
+        public ASTVariable visitVariable(MyunParser.VariableContext ctx) {
+            String name = ctx.name.getText();
+            return new ASTVariable(ctx.start.getLine(), ctx.start.getCharPositionInLine(), name);
+        }
+    }
+
+    private static class TypeVisitor extends MyunBaseVisitor<ASTType> {
+        @Override
+        public ASTType visitParenthesisType(MyunParser.ParenthesisTypeContext ctx) {
+            return ctx.type().accept(this);
+        }
+
+        @Override
+        public ASTType visitBasicType(MyunParser.BasicTypeContext ctx) {
+            String name = ctx.name.getText();
+            return new ASTBasicType(ctx.start.getLine(), ctx.start.getCharPositionInLine(), name);
+        }
+
+        @Override
+        public ASTType visitFuncType(MyunParser.FuncTypeContext ctx) {
+            List<ASTType> types = ctx.type().stream().map(t -> t.accept(this)).collect(Collectors.toList());
+            ASTType returnType = types.get(types.size() - 1);
+            types.remove(types.size() - 1);
+            return new ASTFuncType(ctx.start.getLine(), ctx.start.getCharPositionInLine(), types, returnType);
         }
     }
 }

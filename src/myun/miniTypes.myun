@@ -1,0 +1,5 @@
+script miniTypes
+    x = 5
+    b = true
+    y = 5.0
+end

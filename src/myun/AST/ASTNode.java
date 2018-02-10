@@ -4,8 +4,8 @@ package myun.AST;
  * Most general AST node.
  */
 public abstract class ASTNode {
-    private int lineNumber;
-    private int charPositionInLine;
+    protected int lineNumber;
+    protected int charPositionInLine;
 
     /**
      * Creates a new AST node.

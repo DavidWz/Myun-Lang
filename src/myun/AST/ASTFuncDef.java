@@ -1,6 +1,7 @@
 package myun.AST;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Represents a function definition.
@@ -8,6 +9,7 @@ import java.util.List;
 public class ASTFuncDef extends ASTNode {
     private String name;
     private List<ASTVariable> parameters;
+    private ASTType returnType;
     private ASTBlock block;
 
     /**
@@ -17,12 +19,14 @@ public class ASTFuncDef extends ASTNode {
      * @param charPositionInLine The character position of this node on its line
      * @param name               The name of the defined function
      * @param params             The parameters of the function
+     * @param returnType         The return type of this function
      * @param block              The function body
      */
-    public ASTFuncDef(int lineNumber, int charPositionInLine, String name, List<ASTVariable> params, ASTBlock block) {
+    public ASTFuncDef(int lineNumber, int charPositionInLine, String name, List<ASTVariable> params, ASTType returnType, ASTBlock block) {
         super(lineNumber, charPositionInLine);
         this.name = name;
         this.parameters = params;
+        this.returnType = returnType;
         this.block = block;
     }
 
@@ -32,6 +36,10 @@ public class ASTFuncDef extends ASTNode {
 
     public List<ASTVariable> getParameters() {
         return parameters;
+    }
+
+    public Optional<ASTType> getReturnType() {
+        return Optional.ofNullable(returnType);
     }
 
     public ASTBlock getBlock() {

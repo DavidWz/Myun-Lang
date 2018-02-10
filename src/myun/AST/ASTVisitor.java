@@ -5,6 +5,7 @@ package myun.AST;
  */
 public interface ASTVisitor<T> {
     T visit(ASTAssignment node);
+    T visit(ASTBasicType node);
     T visit(ASTBlock node);
     T visit(ASTBoolean node);
     T visit(ASTBranch node);
@@ -14,6 +15,7 @@ public interface ASTVisitor<T> {
     T visit(ASTFuncCall node);
     T visit(ASTFuncDef node);
     T visit(ASTFuncReturn node);
+    T visit(ASTFuncType node);
     T visit(ASTInteger node);
     T visit(ASTLoopBreak node);
     T visit(ASTScript node);
