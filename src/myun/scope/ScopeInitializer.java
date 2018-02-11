@@ -50,7 +50,14 @@ public class ScopeInitializer implements ASTVisitor<Void> {
     public Void visit(ASTBranch node) {
         node.setScope(currentScope);
         node.getConditions().forEach(c -> c.accept(this));
-        node.getBlocks().forEach(b -> b.accept(this));
+
+        Scope parentScope = currentScope;
+        for (ASTBlock block : node.getBlocks()) {
+            currentScope = new Scope(parentScope);
+            block.accept(this);
+            currentScope = parentScope;
+        }
+
         return null;
     }
 
@@ -154,8 +161,15 @@ public class ScopeInitializer implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTWhileLoop node) {
         node.setScope(currentScope);
+
+        Scope parentScope = currentScope;
+        currentScope = new Scope(parentScope);
+
         node.getCondition().accept(this);
         node.getBlock().accept(this);
+
+        currentScope = parentScope;
+
         return null;
     }
 }

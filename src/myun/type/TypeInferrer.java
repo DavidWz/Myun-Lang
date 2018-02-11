@@ -36,7 +36,7 @@ public class TypeInferrer implements ASTVisitor<Void> {
                 node.getVariable().setType(varType);
             }
             else {
-                throw new TypeMismatchException(exprType, varType);
+                throw new TypeMismatchException(exprType, varType, node.getExpr());
             }
         }
         else {
@@ -75,7 +75,7 @@ public class TypeInferrer implements ASTVisitor<Void> {
             ASTBasicType boolType = new ASTBasicType(cond.getLine(), cond.getCharPositionInLine(), PrimitiveTypes.BOOL);
             ASTType condType = cond.getType().orElseThrow(() -> new CouldNotInferTypeException(cond));
             if (!boolType.equals(condType)) {
-                throw new TypeMismatchException(condType, boolType);
+                throw new TypeMismatchException(condType, boolType, cond);
             }
         });
 
@@ -123,10 +123,10 @@ public class TypeInferrer implements ASTVisitor<Void> {
         ASTBasicType toIntType = new ASTBasicType(node.getTo().getLine(), node.getTo().getCharPositionInLine(), PrimitiveTypes.INT);
 
         if (!fromIntType.equals(fromType)) {
-            throw new TypeMismatchException(fromType, fromIntType);
+            throw new TypeMismatchException(fromType, fromIntType, node.getFrom());
         }
         if (!toIntType.equals(toType)) {
-            throw new TypeMismatchException(toType, toIntType);
+            throw new TypeMismatchException(toType, toIntType, node.getTo());
         }
 
         // finally, infer the types in the block
@@ -174,11 +174,8 @@ public class TypeInferrer implements ASTVisitor<Void> {
         node.getBlock().accept(this);
 
         // check if all the return expression types match the actual return type
-        ReturnTypeAccumulator returnTypeAccumulator = new ReturnTypeAccumulator();
-        ASTType returnExprType = returnTypeAccumulator.getReturnExpressionType(node);
-        if (!node.getReturnType().get().equals(returnExprType)) {
-            throw new TypeMismatchException(returnExprType, node.getReturnType().get());
-        }
+        ReturnTypeChecker returnTypeChecker = new ReturnTypeChecker();
+        returnTypeChecker.checkReturnType(node);
 
         return null;
     }
