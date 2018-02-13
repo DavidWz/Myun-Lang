@@ -5,11 +5,11 @@ import myun.AST.*;
 /**
  * Checks whether each program flow in a function has a return statement.
  */
-public class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boolean> {
+class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boolean> {
     private final static String ERROR_MSG = "Each execution path in a function must have a return statement.";
     private ASTFuncDef funcWithoutReturn;
 
-    public FunctionHasReturnConstraint() {
+    FunctionHasReturnConstraint() {
         this.funcWithoutReturn = null;
     }
 
@@ -17,8 +17,9 @@ public class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boole
     public void check(ASTCompileUnit compileUnit) throws ViolatedConstraintException {
         funcWithoutReturn = null;
 
-        if(!compileUnit.accept(this)) {
-            throw new ViolatedConstraintException(ERROR_MSG, funcWithoutReturn.getLine(), funcWithoutReturn.getCharPositionInLine());
+        if (!compileUnit.accept(this)) {
+            throw new ViolatedConstraintException(ERROR_MSG, funcWithoutReturn.getLine(), funcWithoutReturn
+                    .getCharPositionInLine());
         }
     }
 
@@ -42,7 +43,7 @@ public class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boole
         // if there is no return statement at the end
         // we need to traverse the statements from
         else {
-            for (int i = node.getStatements().size()-1; i >= 0; i--) {
+            for (int i = node.getStatements().size() - 1; i >= 0; i--) {
                 if (node.getStatements().get(i).accept(this)) {
                     return true;
                 }
@@ -53,12 +54,7 @@ public class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boole
 
     @Override
     public Boolean visit(ASTBranch node) {
-        if (node.hasElse()) {
-            return node.getBlocks().stream().allMatch(block -> block.accept(this));
-        }
-        else {
-            return false;
-        }
+        return node.hasElse() && node.getBlocks().stream().allMatch(block -> block.accept(this));
     }
 
     @Override

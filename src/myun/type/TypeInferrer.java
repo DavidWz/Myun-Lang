@@ -31,15 +31,14 @@ public class TypeInferrer implements ASTVisitor<Void> {
         // we need to differentiate between variable declaration and assignment
         if (node.getScope().containsVariable(node.getVariable())) {
             // this variable already exists, so make sure the types match
-            ASTType varType = node.getScope().getVariableType(node.getVariable()).orElseThrow(() -> new CouldNotInferTypeException(node.getVariable()));
+            ASTType varType = node.getScope().getVariableType(node.getVariable()).orElseThrow(() -> new
+                    CouldNotInferTypeException(node.getVariable()));
             if (varType.equals(exprType)) {
                 node.getVariable().setType(varType);
-            }
-            else {
+            } else {
                 throw new TypeMismatchException(exprType, varType, node.getExpr());
             }
-        }
-        else {
+        } else {
             // this variable does not exist yet, so create it
             node.getScope().declareVariable(node.getVariable(), exprType);
             node.getVariable().setType(exprType);
@@ -65,7 +64,8 @@ public class TypeInferrer implements ASTVisitor<Void> {
         // make sure the conditions are of type boolean
         node.getConditions().forEach(cond -> {
             cond.accept(this);
-            ASTBasicType boolType = new ASTBasicType(cond.getLine(), cond.getCharPositionInLine(), PrimitiveTypes.MYUN_BOOL);
+            ASTBasicType boolType = new ASTBasicType(cond.getLine(), cond.getCharPositionInLine(), PrimitiveTypes
+                    .MYUN_BOOL);
             ASTType condType = cond.getType().orElseThrow(() -> new CouldNotInferTypeException(cond));
             if (!boolType.equals(condType)) {
                 throw new TypeMismatchException(condType, boolType, cond);
@@ -90,14 +90,11 @@ public class TypeInferrer implements ASTVisitor<Void> {
         String typeName;
         if (node.getValue() instanceof Integer) {
             typeName = PrimitiveTypes.MYUN_INT;
-        }
-        else if (node.getValue() instanceof Float) {
+        } else if (node.getValue() instanceof Float) {
             typeName = PrimitiveTypes.MYUN_FLOAT;
-        }
-        else if (node.getValue() instanceof Boolean) {
+        } else if (node.getValue() instanceof Boolean) {
             typeName = PrimitiveTypes.MYUN_BOOL;
-        }
-        else {
+        } else {
             throw new RuntimeException("Unknown constant type " + node.getValue());
         }
 
@@ -111,12 +108,14 @@ public class TypeInferrer implements ASTVisitor<Void> {
         // make sure the variable is not defined yet
         if (node.getVariable().getScope().containsVariable(node.getVariable())) {
             ASTVariable originalVar = node.getVariable().getScope().getFirstDeclaredVariable(node.getVariable()).
-                    orElseThrow(() -> new RuntimeException("Scope returned empty optional even though containsVariable method returned true."));
+                    orElseThrow(() -> new RuntimeException("Scope returned empty optional even though " +
+                            "containsVariable method returned true."));
             throw new IllegalRedefineException(node.getVariable().getName(), originalVar, node.getVariable());
         }
 
         // define that variable in the scope
-        ASTBasicType varIntType = new ASTBasicType(node.getVariable().getLine(), node.getVariable().getCharPositionInLine(), PrimitiveTypes.MYUN_INT);
+        ASTBasicType varIntType = new ASTBasicType(node.getVariable().getLine(), node.getVariable()
+                .getCharPositionInLine(), PrimitiveTypes.MYUN_INT);
         node.getVariable().setType(varIntType);
         node.getVariable().getScope().declareVariable(node.getVariable(), varIntType);
 
@@ -126,8 +125,10 @@ public class TypeInferrer implements ASTVisitor<Void> {
         ASTType fromType = node.getFrom().getType().orElseThrow(() -> new CouldNotInferTypeException(node.getFrom()));
         ASTType toType = node.getTo().getType().orElseThrow(() -> new CouldNotInferTypeException(node.getTo()));
 
-        ASTBasicType fromIntType = new ASTBasicType(node.getFrom().getLine(), node.getFrom().getCharPositionInLine(), PrimitiveTypes.MYUN_INT);
-        ASTBasicType toIntType = new ASTBasicType(node.getTo().getLine(), node.getTo().getCharPositionInLine(), PrimitiveTypes.MYUN_INT);
+        ASTBasicType fromIntType = new ASTBasicType(node.getFrom().getLine(), node.getFrom().getCharPositionInLine(),
+                PrimitiveTypes.MYUN_INT);
+        ASTBasicType toIntType = new ASTBasicType(node.getTo().getLine(), node.getTo().getCharPositionInLine(),
+                PrimitiveTypes.MYUN_INT);
 
         if (!fromIntType.equals(fromType)) {
             throw new TypeMismatchException(fromType, fromIntType, node.getFrom());
@@ -159,20 +160,17 @@ public class TypeInferrer implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTFuncDef node) {
         // make the parameter types known to the scope
-        node.getParameters().forEach(param -> {
-            if (!param.getType().isPresent()) {
-                throw new RuntimeException("Type inference is not supported yet!");
-            }
-            param.getScope().declareVariable(param, param.getType().get());
-        });
+        node.getParameters().forEach(param -> param.getScope().declareVariable(param, param.getType().orElseThrow(()
+                -> new RuntimeException("Type inference is not supported yet!"))));
 
         // make the function type known to the scope
         if (!node.getReturnType().isPresent()) {
             throw new RuntimeException("Type inference is not supported yet!");
         }
         ASTFuncType funcType = new ASTFuncType(node.getLine(), node.getCharPositionInLine(),
-                node.getParameters().stream().map(param -> param.getType().get()).collect(Collectors.toList()),
-                node.getReturnType().get());
+                node.getParameters().stream().map(param -> param.getType().orElseThrow(() -> new RuntimeException
+                        ("Type inference is not supported yet!"))).collect(Collectors.toList()),
+                node.getReturnType().orElseThrow(() -> new RuntimeException("Type inference is not supported yet!")));
 
         // we set without check for previously defined function because we want to support redefinition of functions
         node.getScope().declareFunction(node.getName(), funcType);
@@ -212,7 +210,8 @@ public class TypeInferrer implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTVariable node) {
         // ask the scope for the type
-        node.setType(node.getScope().getVariableType(node).orElseThrow(() -> new UndeclaredVariableUsedException(node)));
+        node.setType(node.getScope().getVariableType(node).orElseThrow(() -> new UndeclaredVariableUsedException
+                (node)));
         return null;
     }
 

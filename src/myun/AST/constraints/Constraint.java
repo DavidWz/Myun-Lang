@@ -5,6 +5,6 @@ import myun.AST.ASTCompileUnit;
 /**
  * Interface for context-sensitive constraints on AST nodes.
  */
-public interface Constraint {
+interface Constraint {
     void check(ASTCompileUnit compileUnit) throws ViolatedConstraintException;
 }

@@ -7,7 +7,7 @@ public class ViolatedConstraintException extends Exception {
     private int lineNumber;
     private int charPositionInLine;
 
-    public ViolatedConstraintException(String message, int lineNumber, int charPositionInLine) {
+    ViolatedConstraintException(String message, int lineNumber, int charPositionInLine) {
         super(message);
         this.lineNumber = lineNumber;
         this.charPositionInLine = charPositionInLine;
@@ -15,10 +15,8 @@ public class ViolatedConstraintException extends Exception {
 
     @Override
     public String getMessage() {
-        StringBuilder errorMsg = new StringBuilder();
-        errorMsg.append("Error on line ").append(lineNumber);
-        errorMsg.append(" at ").append(charPositionInLine).append(": ");
-        errorMsg.append(super.getMessage());
-        return errorMsg.toString();
+        return "Error on line " + lineNumber +
+                " at " + charPositionInLine + ": " +
+                super.getMessage();
     }
 }

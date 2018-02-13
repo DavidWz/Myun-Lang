@@ -2,21 +2,19 @@ package myun.type;
 
 import myun.AST.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 /**
- * Accumulates all types of return expressions inside a function definition.
+ * Checks if all expressions in function return statements are of the same type as the declared function return type.
  */
-public class ReturnTypeChecker implements ASTVisitor<Void> {
+class ReturnTypeChecker implements ASTVisitor<Void> {
     private ASTType targetType;
 
-    public ReturnTypeChecker() {
+    ReturnTypeChecker() {
         this.targetType = null;
     }
 
-    public void checkReturnType(ASTFuncDef node) {
-        this.targetType = node.getReturnType().orElseThrow(() -> new RuntimeException("Type inference not supported yet!"));
+    void checkReturnType(ASTFuncDef node) {
+        this.targetType = node.getReturnType().orElseThrow(() -> new RuntimeException("Type inference not supported " +
+                "yet!"));
         node.accept(this);
     }
 
@@ -39,7 +37,7 @@ public class ReturnTypeChecker implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTBranch node) {
-       node.getBlocks().forEach(block -> block.accept(this));
+        node.getBlocks().forEach(block -> block.accept(this));
         return null;
     }
 

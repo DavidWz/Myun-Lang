@@ -17,9 +17,7 @@ public class UndeclaredVariableUsedException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        StringBuilder errorMsg = new StringBuilder();
-        errorMsg.append("Error: Undeclared variable ").append(variable.accept(prettyPrinter));
-        errorMsg.append(" used on line ").append(variable.getLine()).append(" at ").append(variable.getCharPositionInLine());
-        return errorMsg.toString();
+        return "Error: Undeclared variable " + variable.accept(prettyPrinter) +
+                " used on line " + variable.getLine() + " at " + variable.getCharPositionInLine();
     }
 }

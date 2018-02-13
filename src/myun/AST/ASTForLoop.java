@@ -19,7 +19,8 @@ public class ASTForLoop extends ASTStatement {
      * @param to                 The end value
      * @param block              The execution block
      */
-    public ASTForLoop(int lineNumber, int charPositionInLine, ASTVariable variable, ASTExpression from, ASTExpression to, ASTBlock block) {
+    public ASTForLoop(int lineNumber, int charPositionInLine, ASTVariable variable, ASTExpression from, ASTExpression
+            to, ASTBlock block) {
         super(lineNumber, charPositionInLine);
         this.variable = variable;
         this.from = from;

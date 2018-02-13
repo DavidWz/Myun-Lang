@@ -34,7 +34,8 @@ public class ASTBlock extends ASTNode {
      * @param funcReturn         A possible function return statement (can be null)
      * @param loopBreak          A possible loop break (can be null)
      */
-    public ASTBlock(int lineNumber, int charPositionInLine, List<ASTStatement> statements, ASTFuncReturn funcReturn, ASTLoopBreak loopBreak) {
+    public ASTBlock(int lineNumber, int charPositionInLine, List<ASTStatement> statements, ASTFuncReturn funcReturn,
+                    ASTLoopBreak loopBreak) {
         super(lineNumber, charPositionInLine);
         this.statements = statements;
         this.funcReturn = funcReturn;

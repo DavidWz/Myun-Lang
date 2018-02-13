@@ -14,7 +14,7 @@ public class Scope {
     private Set<ASTVariable> declaredVariables;
     private Map<String, Set<ASTFuncType>> declaredFunctions;
 
-    public Scope(Scope parent) {
+    Scope(Scope parent) {
         this.parent = parent;
         this.declaredVariables = new HashSet<>();
         this.declaredFunctions = new HashMap<>();
@@ -22,8 +22,9 @@ public class Scope {
 
     /**
      * Declares the variable in the current scope.
+     *
      * @param variable the variable
-     * @param astType the type of the variable
+     * @param astType  the type of the variable
      */
     public void declareVariable(ASTVariable variable, ASTType astType) {
         variable.setType(astType);
@@ -32,23 +33,17 @@ public class Scope {
 
     /**
      * Checks if a variable is defined in this scope.
+     *
      * @param var the variable
      * @return true iff the variable has been defined
      */
     public boolean containsVariable(ASTVariable var) {
-        if (declaredVariables.contains(var)) {
-            return true;
-        }
-        else if (parent != null) {
-            return parent.containsVariable(var);
-        }
-        else {
-            return false;
-        }
+        return declaredVariables.contains(var) || (parent != null && parent.containsVariable(var));
     }
 
     /**
      * Determines the type of a variable.
+     *
      * @param var the variable
      * @return the type of the variable or empty if not found
      */
@@ -63,18 +58,17 @@ public class Scope {
         }
         if (varType.isPresent()) {
             return varType;
-        }
-        else if (parent != null) {
+        } else if (parent != null) {
             // search for it in the parent scope
             return parent.getVariableType(var);
-        }
-        else {
+        } else {
             return Optional.empty();
         }
     }
 
     /**
      * Returns the variable which was first encountered for this identifier.
+     *
      * @param var the variable
      * @return the first declared ast variable
      */
@@ -89,23 +83,22 @@ public class Scope {
         if (parent != null) {
             // search for it in the parent scope
             return parent.getFirstDeclaredVariable(var);
-        }
-        else {
+        } else {
             return Optional.empty();
         }
     }
 
     /**
      * Declares a function in the current scope.
-     * @param name the name of the function
+     *
+     * @param name     the name of the function
      * @param funcType the type of the function
      */
     public void declareFunction(String name, ASTFuncType funcType) {
         if (declaredFunctions.containsKey(name)) {
             // there already are previous entry, so we need to overload
             declaredFunctions.get(name).add(funcType);
-        }
-        else {
+        } else {
             // create a new entry for this function
             Set<ASTFuncType> funcTypes = new HashSet<>();
             funcTypes.add(funcType);
@@ -115,7 +108,8 @@ public class Scope {
 
     /**
      * Determines the return type of a function given the parameter types.
-     * @param name the name of the function
+     *
+     * @param name       the name of the function
      * @param paramTypes the parameter types
      * @return the return type or empty if not defined
      */
@@ -133,8 +127,7 @@ public class Scope {
         // search for a definition in the parent scope
         if (parent != null) {
             return parent.getReturnType(name, paramTypes);
-        }
-        else {
+        } else {
             return Optional.empty();
         }
     }

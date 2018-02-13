@@ -5,11 +5,11 @@ import myun.AST.ASTFuncType;
 /**
  * Wrapper class for function name + type.
  */
-public class FuncHeader {
+class FuncHeader {
     private String name;
     private ASTFuncType type;
 
-    public FuncHeader(String name, ASTFuncType type) {
+    FuncHeader(String name, ASTFuncType type) {
         this.name = name;
         this.type = type;
     }
@@ -29,8 +29,7 @@ public class FuncHeader {
 
         FuncHeader that = (FuncHeader) o;
 
-        if (!getName().equals(that.getName())) return false;
-        return getType().equals(that.getType());
+        return getName().equals(that.getName()) && getType().equals(that.getType());
 
     }
 

@@ -27,12 +27,13 @@ public class UndeclaredFunctionCalledException extends RuntimeException {
         errorMsg.append("(");
         for (int i = 0; i < paramTypes.size(); i++) {
             errorMsg.append(paramTypes.get(0).accept(prettyPrinter));
-            if (i < paramTypes.size()-1) {
+            if (i < paramTypes.size() - 1) {
                 errorMsg.append(", ");
             }
         }
         errorMsg.append(")");
-        errorMsg.append(" called on line ").append(funcCall.getLine()).append(" at ").append(funcCall.getCharPositionInLine());
+        errorMsg.append(" called on line ").append(funcCall.getLine()).append(" at ").append(funcCall
+                .getCharPositionInLine());
         return errorMsg.toString();
     }
 }

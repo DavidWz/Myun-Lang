@@ -24,7 +24,7 @@ public class ASTGenerator {
      *
      * @param fileName the file name
      * @return an AST representing the program code
-     * @throws IOException thrown when the file could not be loaded
+     * @throws IOException                 thrown when the file could not be loaded
      * @throws ViolatedConstraintException thrown when a constraint is violated
      */
     public ASTCompileUnit parseFile(String fileName) throws IOException, ViolatedConstraintException {
@@ -82,9 +82,11 @@ public class ASTGenerator {
             }
             ASTLoopBreak loopBreak = null;
             if (ctx.loopBreak() != null) {
-                loopBreak = new ASTLoopBreak(ctx.loopBreak().start.getLine(), ctx.loopBreak().start.getCharPositionInLine());
+                loopBreak = new ASTLoopBreak(ctx.loopBreak().start.getLine(), ctx.loopBreak().start
+                        .getCharPositionInLine());
             }
-            return new ASTBlock(ctx.start.getLine(), ctx.start.getCharPositionInLine(), statements, funcReturn, loopBreak);
+            return new ASTBlock(ctx.start.getLine(), ctx.start.getCharPositionInLine(), statements, funcReturn,
+                    loopBreak);
         }
     }
 
@@ -123,7 +125,8 @@ public class ASTGenerator {
 
             ASTBlock block = ctx.block().accept(new BlockVisitor());
 
-            return new ASTFuncDef(ctx.start.getLine(), ctx.start.getCharPositionInLine(), name, params, returnType, block);
+            return new ASTFuncDef(ctx.start.getLine(), ctx.start.getCharPositionInLine(), name, params, returnType,
+                    block);
         }
     }
 
@@ -193,8 +196,7 @@ public class ASTGenerator {
             } else if (ctx.variable() != null) {
                 return ctx.variable().accept(new VariableVisitor());
             } else {
-                // ERROR
-                return null;
+                throw new RuntimeException("Unknown basic expression type.");
             }
         }
 
@@ -243,7 +245,7 @@ public class ASTGenerator {
                     op = "mod";
                     break;
                 default:
-                    // ERROR
+                    throw new RuntimeException("Unknown operator expression.");
             }
             ASTVariable opVar = new ASTVariable(ctx.op.getLine(), ctx.op.getCharPositionInLine(), op);
             ASTExpression right = ctx.right.accept(this);
@@ -261,7 +263,7 @@ public class ASTGenerator {
                     op = "negate";
                     break;
                 default:
-                    // ERROR
+                    throw new RuntimeException("Unknwon prefix expression.");
             }
             ASTVariable opVar = new ASTVariable(ctx.prefix.getLine(), ctx.prefix.getCharPositionInLine(), op);
             ASTExpression expr = ctx.expr().accept(new ExprVisitor());

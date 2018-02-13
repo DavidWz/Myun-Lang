@@ -22,7 +22,8 @@ public class ASTFuncDef extends ASTNode {
      * @param returnType         The return type of this function
      * @param block              The function body
      */
-    public ASTFuncDef(int lineNumber, int charPositionInLine, String name, List<ASTVariable> params, ASTType returnType, ASTBlock block) {
+    public ASTFuncDef(int lineNumber, int charPositionInLine, String name, List<ASTVariable> params, ASTType
+            returnType, ASTBlock block) {
         super(lineNumber, charPositionInLine);
         this.name = name;
         this.parameters = params;

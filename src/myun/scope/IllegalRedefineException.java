@@ -1,7 +1,6 @@
 package myun.scope;
 
 import myun.AST.ASTNode;
-import myun.AST.MyunPrettyPrinter;
 
 /**
  * Thrown when a variable or function is illegally redefined.
@@ -19,11 +18,9 @@ public class IllegalRedefineException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        StringBuilder errorMsg = new StringBuilder();
-        errorMsg.append("Error: Illegal redefinition of ").append(name);
-        errorMsg.append(" on line ").append(redefinedNode.getLine()).append(" at ").append(redefinedNode.getCharPositionInLine());
-        errorMsg.append(" first defined on line ").append(originalNode.getLine());
-        errorMsg.append(" at ").append(originalNode.getCharPositionInLine());
-        return errorMsg.toString();
+        return "Error: Illegal redefinition of " + name +
+                " on line " + redefinedNode.getLine() + " at " + redefinedNode.getCharPositionInLine() +
+                " first defined on line " + originalNode.getLine() +
+                " at " + originalNode.getCharPositionInLine();
     }
 }

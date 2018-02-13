@@ -41,9 +41,8 @@ public class ASTFuncType extends ASTType {
 
         ASTFuncType that = (ASTFuncType) o;
 
-        if (!getParameterTypes().equals(that.getParameterTypes())) return false;
-        return getReturnType() != null ? getReturnType().equals(that.getReturnType()) : that.getReturnType() == null;
-
+        return getParameterTypes().equals(that.getParameterTypes()) && (getReturnType() != null ? getReturnType()
+                .equals(that.getReturnType()) : that.getReturnType() == null);
     }
 
     @Override

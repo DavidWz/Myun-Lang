@@ -13,7 +13,7 @@ public class TypeMismatchException extends RuntimeException {
     private ASTNode reason;
     private MyunPrettyPrinter prettyPrinter;
 
-    public TypeMismatchException(ASTType actual, ASTType expected, ASTNode reason) {
+    TypeMismatchException(ASTType actual, ASTType expected, ASTNode reason) {
         super();
         this.actual = actual;
         this.expected = expected;
@@ -23,11 +23,9 @@ public class TypeMismatchException extends RuntimeException {
 
     @Override
     public String getMessage() {
-        StringBuilder errorMsg = new StringBuilder();
-        errorMsg.append("Type Error: Types Mismatch.\n");
-        errorMsg.append("Expected ").append(expected.accept(prettyPrinter));
-        errorMsg.append(" but got ").append(actual.accept(prettyPrinter));
-        errorMsg.append(" on line ").append(reason.getLine()).append(" at ").append(reason.getCharPositionInLine());
-        return errorMsg.toString();
+        return "Type Error: Types Mismatch.\n" +
+                "Expected " + expected.accept(prettyPrinter) +
+                " but got " + actual.accept(prettyPrinter) +
+                " on line " + reason.getLine() + " at " + reason.getCharPositionInLine();
     }
 }
