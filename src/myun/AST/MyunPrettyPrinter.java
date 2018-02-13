@@ -58,11 +58,6 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
     }
 
     @Override
-    public String visit(ASTBoolean node) {
-        return Boolean.toString(node.getValue());
-    }
-
-    @Override
     public String visit(ASTBranch node) {
         StringBuilder sb = new StringBuilder();
 
@@ -98,8 +93,8 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
     }
 
     @Override
-    public String visit(ASTFloat node) {
-        return Float.toString(node.getValue());
+    public String visit(ASTConstant node) {
+        return node.getValue().toString();
     }
 
     @Override
@@ -182,11 +177,6 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
         }
         sb.append(" -> ").append(node.getReturnType().accept(this));
         return sb.toString();
-    }
-
-    @Override
-    public String visit(ASTInteger node) {
-        return Integer.toString(node.getValue());
     }
 
     @Override

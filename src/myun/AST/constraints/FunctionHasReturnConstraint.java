@@ -52,11 +52,6 @@ public class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boole
     }
 
     @Override
-    public Boolean visit(ASTBoolean node) {
-        return false;
-    }
-
-    @Override
     public Boolean visit(ASTBranch node) {
         if (node.hasElse()) {
             return node.getBlocks().stream().allMatch(block -> block.accept(this));
@@ -72,7 +67,7 @@ public class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boole
     }
 
     @Override
-    public Boolean visit(ASTFloat node) {
+    public Boolean visit(ASTConstant node) {
         return false;
     }
 
@@ -102,11 +97,6 @@ public class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boole
 
     @Override
     public Boolean visit(ASTFuncType node) {
-        return false;
-    }
-
-    @Override
-    public Boolean visit(ASTInteger node) {
         return false;
     }
 

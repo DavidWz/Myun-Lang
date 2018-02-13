@@ -1,24 +1,24 @@
 package myun.AST;
 
 /**
- * Represents an integer.
+ * Represents a constant.
  */
-public class ASTInteger extends ASTExpression {
-    private int value;
+public class ASTConstant<CT> extends ASTExpression {
+    private CT value;
 
     /**
-     * Creates a new AST integer
+     * Creates a new AST constant.
      *
      * @param lineNumber         The line in the source code where this node starts
      * @param charPositionInLine The character position of this node on its line
-     * @param value              The value of this integer
+     * @param value              The value of this constant.
      */
-    public ASTInteger(int lineNumber, int charPositionInLine, int value) {
+    public ASTConstant(int lineNumber, int charPositionInLine, CT value) {
         super(lineNumber, charPositionInLine);
         this.value = value;
     }
 
-    public int getValue() {
+    public CT getValue() {
         return value;
     }
 

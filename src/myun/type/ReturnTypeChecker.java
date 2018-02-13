@@ -38,11 +38,6 @@ public class ReturnTypeChecker implements ASTVisitor<Void> {
     }
 
     @Override
-    public Void visit(ASTBoolean node) {
-        return null;
-    }
-
-    @Override
     public Void visit(ASTBranch node) {
        node.getBlocks().forEach(block -> block.accept(this));
         return null;
@@ -54,7 +49,7 @@ public class ReturnTypeChecker implements ASTVisitor<Void> {
     }
 
     @Override
-    public Void visit(ASTFloat node) {
+    public Void visit(ASTConstant node) {
         return null;
     }
 
@@ -84,11 +79,6 @@ public class ReturnTypeChecker implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTFuncType node) {
-        return null;
-    }
-
-    @Override
-    public Void visit(ASTInteger node) {
         return null;
     }
 

@@ -29,3 +29,8 @@ gen/
 
 # artifacts
 out/
+
+# llvm compiled stuff
+*.ll
+*.s
+*.o

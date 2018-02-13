@@ -61,18 +61,11 @@ public class TypeInferrer implements ASTVisitor<Void> {
     }
 
     @Override
-    public Void visit(ASTBoolean node) {
-        ASTBasicType boolType = new ASTBasicType(node.getLine(), node.getCharPositionInLine(), PrimitiveTypes.BOOL);
-        node.setType(boolType);
-        return null;
-    }
-
-    @Override
     public Void visit(ASTBranch node) {
         // make sure the conditions are of type boolean
         node.getConditions().forEach(cond -> {
             cond.accept(this);
-            ASTBasicType boolType = new ASTBasicType(cond.getLine(), cond.getCharPositionInLine(), PrimitiveTypes.BOOL);
+            ASTBasicType boolType = new ASTBasicType(cond.getLine(), cond.getCharPositionInLine(), PrimitiveTypes.MYUN_BOOL);
             ASTType condType = cond.getType().orElseThrow(() -> new CouldNotInferTypeException(cond));
             if (!boolType.equals(condType)) {
                 throw new TypeMismatchException(condType, boolType, cond);
@@ -93,9 +86,23 @@ public class TypeInferrer implements ASTVisitor<Void> {
     }
 
     @Override
-    public Void visit(ASTFloat node) {
-        ASTBasicType floatType = new ASTBasicType(node.getLine(), node.getCharPositionInLine(), PrimitiveTypes.FLOAT);
-        node.setType(floatType);
+    public Void visit(ASTConstant node) {
+        String typeName;
+        if (node.getValue() instanceof Integer) {
+            typeName = PrimitiveTypes.MYUN_INT;
+        }
+        else if (node.getValue() instanceof Float) {
+            typeName = PrimitiveTypes.MYUN_FLOAT;
+        }
+        else if (node.getValue() instanceof Boolean) {
+            typeName = PrimitiveTypes.MYUN_BOOL;
+        }
+        else {
+            throw new RuntimeException("Unknown constant type " + node.getValue());
+        }
+
+        ASTBasicType type = new ASTBasicType(node.getLine(), node.getCharPositionInLine(), typeName);
+        node.setType(type);
         return null;
     }
 
@@ -109,7 +116,7 @@ public class TypeInferrer implements ASTVisitor<Void> {
         }
 
         // define that variable in the scope
-        ASTBasicType varIntType = new ASTBasicType(node.getVariable().getLine(), node.getVariable().getCharPositionInLine(), PrimitiveTypes.INT);
+        ASTBasicType varIntType = new ASTBasicType(node.getVariable().getLine(), node.getVariable().getCharPositionInLine(), PrimitiveTypes.MYUN_INT);
         node.getVariable().setType(varIntType);
         node.getVariable().getScope().declareVariable(node.getVariable(), varIntType);
 
@@ -119,8 +126,8 @@ public class TypeInferrer implements ASTVisitor<Void> {
         ASTType fromType = node.getFrom().getType().orElseThrow(() -> new CouldNotInferTypeException(node.getFrom()));
         ASTType toType = node.getTo().getType().orElseThrow(() -> new CouldNotInferTypeException(node.getTo()));
 
-        ASTBasicType fromIntType = new ASTBasicType(node.getFrom().getLine(), node.getFrom().getCharPositionInLine(), PrimitiveTypes.INT);
-        ASTBasicType toIntType = new ASTBasicType(node.getTo().getLine(), node.getTo().getCharPositionInLine(), PrimitiveTypes.INT);
+        ASTBasicType fromIntType = new ASTBasicType(node.getFrom().getLine(), node.getFrom().getCharPositionInLine(), PrimitiveTypes.MYUN_INT);
+        ASTBasicType toIntType = new ASTBasicType(node.getTo().getLine(), node.getTo().getCharPositionInLine(), PrimitiveTypes.MYUN_INT);
 
         if (!fromIntType.equals(fromType)) {
             throw new TypeMismatchException(fromType, fromIntType, node.getFrom());
@@ -188,13 +195,6 @@ public class TypeInferrer implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTFuncType node) {
-        return null;
-    }
-
-    @Override
-    public Void visit(ASTInteger node) {
-        ASTBasicType intType = new ASTBasicType(node.getLine(), node.getCharPositionInLine(), PrimitiveTypes.INT);
-        node.setType(intType);
         return null;
     }
 

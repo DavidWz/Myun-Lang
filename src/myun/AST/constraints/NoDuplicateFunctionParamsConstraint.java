@@ -36,9 +36,6 @@ public class NoDuplicateFunctionParamsConstraint implements Constraint, ASTVisit
     }
 
     @Override
-    public Optional<ASTVariable> visit(ASTBoolean node) { return Optional.empty(); }
-
-    @Override
     public Optional<ASTVariable> visit(ASTBranch node) { return Optional.empty(); }
 
     @Override
@@ -53,7 +50,9 @@ public class NoDuplicateFunctionParamsConstraint implements Constraint, ASTVisit
     }
 
     @Override
-    public Optional<ASTVariable> visit(ASTFloat node) { return Optional.empty(); }
+    public Optional<ASTVariable> visit(ASTConstant node) {
+        return Optional.empty();
+    }
 
     @Override
     public Optional<ASTVariable> visit(ASTForLoop node) { return Optional.empty(); }
@@ -80,9 +79,6 @@ public class NoDuplicateFunctionParamsConstraint implements Constraint, ASTVisit
     public Optional<ASTVariable> visit(ASTFuncType node) {
         return Optional.empty();
     }
-
-    @Override
-    public Optional<ASTVariable> visit(ASTInteger node) { return Optional.empty(); }
 
     @Override
     public Optional<ASTVariable> visit(ASTLoopBreak node) { return Optional.empty(); }

@@ -182,13 +182,13 @@ public class ASTGenerator {
         @Override
         public ASTExpression visitBasic(MyunParser.BasicContext ctx) {
             if (ctx.bool() != null) {
-                return new ASTBoolean(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+                return new ASTConstant<>(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
                         ctx.bool().getText().equals("true"));
             } else if (ctx.integer() != null) {
-                return new ASTInteger(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+                return new ASTConstant<>(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
                         Integer.parseInt(ctx.integer().getText()));
             } else if (ctx.floating() != null) {
-                return new ASTFloat(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+                return new ASTConstant<>(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
                         Float.parseFloat(ctx.floating().getText()));
             } else if (ctx.variable() != null) {
                 return ctx.variable().accept(new VariableVisitor());

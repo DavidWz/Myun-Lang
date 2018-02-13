@@ -1,23 +1,31 @@
-funcDef(x::Int, y::Int)::Int
-    b = x+y
-    z = x*y
-    return b+z
+fib(n::Int)::Int
+    if n <= 2 then
+        return 1
+    else
+        return fib(n-2)+fib(n-1)
+    end
 end
 
-funcDef(n::Int)::Int
+/*sumUpTo(n::Int)::Int
     sum = 0
     for i from 1 to n do
         sum = sum + i
     end
-    for i from 1 to n do
-        sum = sum + i
+    return sum
+end*/
+
+sumUpTo(n::Float)::Float
+    if n is 0.0 then
+        return 0.0
+    else
+        return sumUpTo(n-1.0)+n
     end
-    return funcDef(sum/2)
 end
 
 script miniTypes
-    x = 5
-    b = true
-    y = 5.0
-    z = funcDef(x)
+    if sumUpTo(100.0) is 5050.0 then
+        return 0
+    else
+        return 1
+    end
 end
