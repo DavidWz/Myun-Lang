@@ -75,6 +75,14 @@ public class ScopeInitializer implements ASTVisitor<Void> {
     }
 
     @Override
+    public Void visit(ASTDeclaration node) {
+        node.setScope(currentScope);
+        node.getVariable().accept(this);
+        node.getExpr().accept(this);
+        return null;
+    }
+
+    @Override
     public Void visit(ASTForLoop node) {
         node.setScope(currentScope);
         Scope parentScope = currentScope;

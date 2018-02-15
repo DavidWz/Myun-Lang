@@ -60,6 +60,11 @@ class NoDuplicateFunctionParamsConstraint implements Constraint, ASTVisitor<Opti
     }
 
     @Override
+    public Optional<ASTVariable> visit(ASTDeclaration node) {
+        return Optional.empty();
+    }
+
+    @Override
     public Optional<ASTVariable> visit(ASTForLoop node) {
         return Optional.empty();
     }

@@ -68,6 +68,11 @@ class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boolean> {
     }
 
     @Override
+    public Boolean visit(ASTDeclaration node) {
+        return false;
+    }
+
+    @Override
     public Boolean visit(ASTForLoop node) {
         return false;
     }

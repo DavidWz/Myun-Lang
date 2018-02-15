@@ -1,21 +1,21 @@
 package myun.AST;
 
 /**
- * Represents an assignment of an expression to a variable.
+ * Represents a variable declaration.
  */
-public class ASTAssignment extends ASTStatement {
+public class ASTDeclaration extends ASTStatement {
     private ASTVariable variable;
     private ASTExpression expr;
 
     /**
-     * Creates a new AST assignment.
+     * Creates a new AST declaration.
      *
      * @param lineNumber         The line in the source code where this node starts
      * @param charPositionInLine The character position of this node on its line
-     * @param variable           The assigned variable
+     * @param variable           The declared variable
      * @param expr               The expression the variable is assigned to
      */
-    public ASTAssignment(int lineNumber, int charPositionInLine, ASTVariable variable, ASTExpression expr) {
+    public ASTDeclaration(int lineNumber, int charPositionInLine, ASTVariable variable, ASTExpression expr) {
         super(lineNumber, charPositionInLine);
         this.variable = variable;
         this.expr = expr;

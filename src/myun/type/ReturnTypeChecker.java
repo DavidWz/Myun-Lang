@@ -52,6 +52,11 @@ class ReturnTypeChecker implements ASTVisitor<Void> {
     }
 
     @Override
+    public Void visit(ASTDeclaration node) {
+        return null;
+    }
+
+    @Override
     public Void visit(ASTForLoop node) {
         return node.getBlock().accept(this);
     }

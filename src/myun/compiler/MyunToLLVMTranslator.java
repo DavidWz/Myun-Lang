@@ -82,18 +82,6 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
     }
 
     /**
-     * Checks whether the given assignment is a declaration or a simple update.
-     *
-     * @param node the assignment
-     * @return true iff the lhs variable has been encountered for the first time in this node
-     */
-    private boolean isDeclaration(ASTAssignment node) {
-        ASTVariable firstEncounter = node.getScope().getFirstDeclaredVariable(node.getVariable()).orElseThrow(() ->
-                new InsufficientPreprocessingException("Variable has not been registered in its scope."));
-        return firstEncounter == node.getVariable();
-    }
-
-    /**
      * Generates code for the given expression and packs it into a new register if necessary.
      *
      * @param expr the expression
@@ -103,7 +91,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
         String val = expr.accept(this);
 
         if (expr instanceof ASTFuncCall ||
-                (expr instanceof ASTVariable && expr.getScope().isAssignable((ASTVariable) expr))) {
+                (expr instanceof ASTVariable && expr.getScope().getVarInfo((ASTVariable) expr).isAssignable())) {
             String tmp = getNextRegister();
             llvmCode.append("\t").append(tmp).append(" = ").append(val).append("\n");
             val = tmp;
@@ -121,15 +109,10 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
                 orElseThrow(() -> new InsufficientPreprocessingException("Expression type unknown.")).
                 accept(this);
 
-        if (isDeclaration(node)) {
-            // allocate space for this variable on the stack if it is a declaration
-            llvmCode.append("\t%").append(varName).append(" = alloca ").append(type).append("\n");
-        }
-
+        // store the expression in the stack variable
         llvmCode.append("\tstore ").append(type).append(" ").append(exprVal).append(", ").
                 append(type).append("* %").append(varName).append("\n");
 
-        // throw new RuntimeException("Not supported yet.");
         return null;
     }
 
@@ -205,6 +188,25 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
     @Override
     public String visit(ASTConstant node) {
         return node.getValue().toString();
+    }
+
+    @Override
+    public String visit(ASTDeclaration node) {
+        // compute the expression value and type
+        String exprVal = getConstantOrRegister(node.getExpr());
+        String varName = node.getVariable().getName();
+        String type = node.getVariable().getType().
+                orElseThrow(() -> new InsufficientPreprocessingException("Expression type unknown.")).
+                accept(this);
+
+        // allocate space for this variable on the stack if it is a declaration
+        llvmCode.append("\t%").append(varName).append(" = alloca ").append(type).append("\n");
+
+        // initialize the value
+        llvmCode.append("\tstore ").append(type).append(" ").append(exprVal).append(", ").
+                append(type).append("* %").append(varName).append("\n");
+
+        return null;
     }
 
     @Override
@@ -379,7 +381,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
 
     @Override
     public String visit(ASTVariable node) {
-        if (node.getScope().isAssignable(node)) {
+        if (node.getScope().getVarInfo(node).isAssignable()) {
             // for mutable variables we need to load the value from the stack
             String type = node.getType().
                     orElseThrow(() -> new InsufficientPreprocessingException("Return type not determined.")).

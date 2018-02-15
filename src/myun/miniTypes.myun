@@ -7,7 +7,7 @@ fib(n::Int)::Int
 end
 
 sumUpTo(n::Int)::Int
-    sum = 0
+    sum := 0
     for i from 1 to n do
         sum = sum + i
     end
@@ -15,8 +15,8 @@ sumUpTo(n::Int)::Int
 end
 
 sumUpToF(n::Float)::Float
-    sum = 0.0
-    i = 1.0
+    sum := 0.0
+    i := 1.0
     while i <= n do
         sum = sum + i
         i = i + 1.0
@@ -25,8 +25,8 @@ sumUpToF(n::Float)::Float
 end
 
 approximate(f::Float)::Int
-    x = 0
-    xF = 0.0
+    x := 0
+    xF := 0.0
     while xF < f do
         xF = xF + 1.0
         x = x + 1

@@ -5,6 +5,7 @@ import myun.AST.FuncHeader;
 import myun.scope.IllegalRedefineException;
 import myun.scope.UndeclaredFunctionCalledException;
 import myun.scope.UndeclaredVariableUsedException;
+import myun.scope.VariableInfo;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -34,27 +35,22 @@ public class TypeInferrer implements ASTVisitor<Void> {
         ASTType exprType = node.getExpr().getType().orElseThrow(() -> new CouldNotInferTypeException(node.getExpr()));
         ASTVariable var = node.getVariable();
 
-        // we need to differentiate between variable declaration and assignment
-        if (node.getScope().containsVariable(var)) {
-            // this variable already exists
-
+        // check if this variable has been declared already
+        if (node.getScope().isDeclared(var)) {
             // make sure it is actually assignable
-            if (!node.getScope().isAssignable(var)) {
+            if (!node.getScope().getVarInfo(var).isAssignable()) {
                 throw new NotAssignableException(node);
             }
 
             // make sure the types match
-            ASTType varType = node.getScope().getVariableType(var).orElseThrow(() -> new
-                    CouldNotInferTypeException(var));
+            ASTType varType = node.getScope().getVarInfo(var).getType();
             if (varType.equals(exprType)) {
                 var.setType(varType);
             } else {
                 throw new TypeMismatchException(exprType, varType, node.getExpr());
             }
         } else {
-            // this variable does not exist yet, so create it
-            node.getScope().declareVariable(var, exprType, true);
-            var.setType(exprType);
+            throw new UndeclaredVariableUsedException(var);
         }
 
         return null;
@@ -119,22 +115,40 @@ public class TypeInferrer implements ASTVisitor<Void> {
     }
 
     @Override
+    public Void visit(ASTDeclaration node) {
+        // determine the type of the expression
+        node.getExpr().accept(this);
+        ASTVariable var = node.getVariable();
+
+        // check if this variable has already been declared
+        if (var.getScope().isDeclared(var)) {
+            // this variable already exists
+            throw new IllegalRedefineException(node.getVariable().getName(),
+                    node.getScope().getVarInfo(var).getDeclaration(),
+                    node);
+        } else {
+            // this variable does not exist yet, so declare it
+            node.getScope().declareVariable(node, true); // it is assignable by default
+        }
+
+        return null;
+    }
+
+    @Override
     public Void visit(ASTForLoop node) {
         // make sure the variable is not defined yet
         ASTVariable itVar = node.getVariable();
-        if (itVar.getScope().containsVariable(itVar)) {
-            ASTVariable originalVar = itVar.getScope().getFirstDeclaredVariable(itVar).
-                    orElseThrow(() -> new RuntimeException("Scope returned empty optional even though " +
-                            "containsVariable method returned true."));
-            throw new IllegalRedefineException(itVar.getName(), originalVar, itVar);
+        if (itVar.getScope().isDeclared(itVar)) {
+            throw new IllegalRedefineException(itVar.getName(),
+                    itVar.getScope().getVarInfo(itVar).getDeclaration(),
+                    itVar);
         }
 
         // define that variable in the scope
         ASTBasicType intType = new ASTBasicType(itVar.getLine(),
                 itVar.getCharPositionInLine(),
                 PrimitiveTypes.MYUN_INT);
-        itVar.setType(intType);
-        itVar.getScope().declareVariable(itVar, intType, false);
+        itVar.getScope().declareVariable(itVar, new VariableInfo(intType, false, node));
 
         // make sure from and to expressions are of type int
         node.getFrom().accept(this);
@@ -177,9 +191,12 @@ public class TypeInferrer implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTFuncDef node) {
         // make the parameters known to the scope with their annotated type
-        node.getParameters().forEach(param -> param.getScope().declareVariable(param,
-                param.getType().orElseThrow(() -> new RuntimeException("Type inference is not supported yet!")),
-                false));
+        node.getParameters().forEach(param -> {
+            ASTType type = param.getType().orElseThrow(() ->
+                    new RuntimeException("Type inference is not supported yet!"));
+            VariableInfo varInfo = new VariableInfo(type, false, param);
+            param.getScope().declareVariable(param, varInfo);
+        });
 
         // retrieve the type of this function
         ASTFuncType funcType = new ASTFuncType(node.getLine(), node.getCharPositionInLine(),
@@ -233,8 +250,7 @@ public class TypeInferrer implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTVariable node) {
         // ask the scope for the type
-        node.setType(node.getScope().getVariableType(node).
-                orElseThrow(() -> new UndeclaredVariableUsedException(node)));
+        node.setType(node.getScope().getVarInfo(node).getType());
         return null;
     }
 

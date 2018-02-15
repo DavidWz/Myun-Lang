@@ -10,6 +10,7 @@ public interface ASTVisitor<T> {
     T visit(ASTBranch node);
     T visit(ASTCompileUnit node);
     T visit(ASTConstant node);
+    T visit(ASTDeclaration node);
     T visit(ASTForLoop node);
     T visit(ASTFuncCall node);
     T visit(ASTFuncDef node);

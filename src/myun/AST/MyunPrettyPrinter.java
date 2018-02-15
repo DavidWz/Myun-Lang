@@ -98,6 +98,19 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
     }
 
     @Override
+    public String visit(ASTDeclaration node) {
+        StringBuilder sb = new StringBuilder();
+        indent(sb);
+
+        sb.append(node.getVariable().accept(this));
+        sb.append(" := ");
+        sb.append(node.getExpr().accept(this));
+        sb.append("\n");
+
+        return sb.toString();
+    }
+
+    @Override
     public String visit(ASTForLoop node) {
         StringBuilder sb = new StringBuilder();
         indent(sb);

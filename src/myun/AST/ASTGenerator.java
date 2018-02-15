@@ -93,7 +93,9 @@ public class ASTGenerator {
     private static class StatementVisitor extends MyunBaseVisitor<ASTStatement> {
         @Override
         public ASTStatement visitStatement(MyunParser.StatementContext ctx) {
-            if (ctx.assignment() != null) {
+            if (ctx.declaration() != null) {
+                return ctx.declaration().accept(new DeclarationVisitor());
+            } else if (ctx.assignment() != null) {
                 return ctx.assignment().accept(new AssignmentVisitor());
             } else if (ctx.branch() != null) {
                 return ctx.branch().accept(new BranchVisitor());
@@ -127,6 +129,15 @@ public class ASTGenerator {
 
             return new ASTFuncDef(ctx.start.getLine(), ctx.start.getCharPositionInLine(), name, params, returnType,
                     block);
+        }
+    }
+
+    private static class DeclarationVisitor extends MyunBaseVisitor<ASTDeclaration> {
+        @Override
+        public ASTDeclaration visitDeclaration(MyunParser.DeclarationContext ctx) {
+            ASTVariable var = ctx.variable().accept(new VariableVisitor());
+            ASTExpression expr = ctx.expr().accept(new ExprVisitor());
+            return new ASTDeclaration(ctx.start.getLine(), ctx.start.getCharPositionInLine(), var, expr);
         }
     }
 

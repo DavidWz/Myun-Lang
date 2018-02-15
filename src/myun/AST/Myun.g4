@@ -13,15 +13,17 @@ script: 'script' name=ID block 'end';
 
 /* Types of statements */
 statement
-    : assignment
+    : declaration
+    | assignment
     | branch
     | loop
     ;
 
+/* Variable declarations */
+declaration: variable ':=' expr;
+
 /* Assignments */
-assignment
-    : variable '=' expr
-    ;
+assignment: variable '=' expr;
 
 /* Branches */
 branch
