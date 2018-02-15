@@ -51,7 +51,7 @@ funcParam: variable ('::' type)?;
 
 /* Function Calls */
 funcCall
-    : func=variable '(' (expr (',' expr)*)? ')'
+    : func=ID '(' (expr (',' expr)*)? ')'
     ;
 
 funcReturn

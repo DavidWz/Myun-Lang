@@ -203,7 +203,7 @@ public class ASTGenerator {
         @Override
         public ASTExpression visitOperatorExpr(MyunParser.OperatorExprContext ctx) {
             ASTExpression left = ctx.left.accept(this);
-            String op = null;
+            String op;
             switch (ctx.op.getType()) {
                 case MyunLexer.OP_AND:
                     op = "and";
@@ -247,14 +247,13 @@ public class ASTGenerator {
                 default:
                     throw new RuntimeException("Unknown operator expression.");
             }
-            ASTVariable opVar = new ASTVariable(ctx.op.getLine(), ctx.op.getCharPositionInLine(), op);
             ASTExpression right = ctx.right.accept(this);
-            return new ASTFuncCall(ctx.start.getLine(), ctx.start.getCharPositionInLine(), opVar, left, right);
+            return new ASTFuncCall(ctx.start.getLine(), ctx.start.getCharPositionInLine(), op, left, right);
         }
 
         @Override
         public ASTExpression visitPrefixExpr(MyunParser.PrefixExprContext ctx) {
-            String op = null;
+            String op;
             switch (ctx.prefix.getType()) {
                 case MyunLexer.OP_NOT:
                     op = "not";
@@ -265,20 +264,18 @@ public class ASTGenerator {
                 default:
                     throw new RuntimeException("Unknwon prefix expression.");
             }
-            ASTVariable opVar = new ASTVariable(ctx.prefix.getLine(), ctx.prefix.getCharPositionInLine(), op);
             ASTExpression expr = ctx.expr().accept(new ExprVisitor());
-            return new ASTFuncCall(ctx.start.getLine(), ctx.start.getCharPositionInLine(), opVar, expr);
+            return new ASTFuncCall(ctx.start.getLine(), ctx.start.getCharPositionInLine(), op, expr);
         }
     }
 
     private static class FuncCallVisitor extends MyunBaseVisitor<ASTFuncCall> {
         @Override
         public ASTFuncCall visitFuncCall(MyunParser.FuncCallContext ctx) {
-            ASTVariable var = ctx.variable().accept(new VariableVisitor());
             List<ASTExpression> args = ctx.expr().stream().
                     map(arg -> arg.accept(new ExprVisitor())).
                     collect(Collectors.toList());
-            return new ASTFuncCall(ctx.start.getLine(), ctx.start.getCharPositionInLine(), var, args);
+            return new ASTFuncCall(ctx.start.getLine(), ctx.start.getCharPositionInLine(), ctx.func.getText(), args);
         }
     }
 

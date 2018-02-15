@@ -45,6 +45,11 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
      */
     String translateToLLVM(ASTCompileUnit myunProgram) {
         init();
+
+        // for debug purposes, add printf declaration and a string to print integers
+        llvmCode.append("@.str = private unnamed_addr constant [4 x i8] c\"%d\\0A\\00\", align 1\n");
+        llvmCode.append("declare i32 @printf(i8*, ...)\n\n");
+
         myunProgram.accept(this);
         return llvmCode.toString();
     }
@@ -64,6 +69,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
      */
     private String getNextRegister() {
         nextRegister++;
+        // TODO: what if the program contains variables called "tmp"?
         return "%tmp" + nextRegister;
     }
 
@@ -76,16 +82,28 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
     }
 
     /**
+     * Checks whether the given assignment is a declaration or a simple update.
+     *
+     * @param node the assignment
+     * @return true iff the lhs variable has been encountered for the first time in this node
+     */
+    private boolean isDeclaration(ASTAssignment node) {
+        ASTVariable firstEncounter = node.getScope().getFirstDeclaredVariable(node.getVariable()).orElseThrow(() ->
+                new InsufficientPreprocessingException("Variable has not been registered in its scope."));
+        return firstEncounter == node.getVariable();
+    }
+
+    /**
      * Generates code for the given expression and packs it into a new register if necessary.
      *
      * @param expr the expression
-     * @return the variable or constant which holds the result
+     * @return the register or constant which holds the result
      */
-    private String getConstantOrVariableValue(ASTExpression expr) {
+    private String getConstantOrRegister(ASTExpression expr) {
         String val = expr.accept(this);
 
-        // since the phi instruction only takes vars or constants, we have to use another register for calls
-        if (expr instanceof ASTFuncCall) {
+        if (expr instanceof ASTFuncCall ||
+                (expr instanceof ASTVariable && expr.getScope().isAssignable((ASTVariable) expr))) {
             String tmp = getNextRegister();
             llvmCode.append("\t").append(tmp).append(" = ").append(val).append("\n");
             val = tmp;
@@ -96,19 +114,23 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
 
     @Override
     public String visit(ASTAssignment node) {
-        // we assume the variable was allocated already
-        // and the ptr to that variable is stored in %var
-        String exprVal = getConstantOrVariableValue(node.getExpr());
-        String exprType = node.getExpr().getType().
+        // compute the expression value and type
+        String exprVal = getConstantOrRegister(node.getExpr());
+        String varName = node.getVariable().getName();
+        String type = node.getVariable().getType().
                 orElseThrow(() -> new InsufficientPreprocessingException("Expression type unknown.")).
                 accept(this);
-        String targetVar = node.getVariable().getName();
 
-        // create a store instruction that stores the expression value to the variable ptr on the stack
-        llvmCode.append("\tstore ").append(exprType).append(" ").append(exprVal).append(", ");
-        llvmCode.append(exprType).append("* %").append(targetVar).append("\n");
+        if (isDeclaration(node)) {
+            // allocate space for this variable on the stack if it is a declaration
+            llvmCode.append("\t%").append(varName).append(" = alloca ").append(type).append("\n");
+        }
 
-        throw new RuntimeException("Not supported yet.");
+        llvmCode.append("\tstore ").append(type).append(" ").append(exprVal).append(", ").
+                append(type).append("* %").append(varName).append("\n");
+
+        // throw new RuntimeException("Not supported yet.");
+        return null;
     }
 
     @Override
@@ -137,6 +159,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
     @Override
     public String visit(ASTBranch node) {
         if (node.getConditions().size() != 1) {
+            // TODO: implement me!
             throw new RuntimeException("Elseif blocks not implemented yet.");
         }
 
@@ -144,7 +167,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
         int labelID = getNextLabelID();
 
         // evaluate the if condition
-        String ifCond = getConstantOrVariableValue(node.getConditions().get(0));
+        String ifCond = getConstantOrRegister(node.getConditions().get(0));
 
         // compare then jump
         llvmCode.append("\tbr i1 ").append(ifCond);
@@ -153,12 +176,14 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
 
         // if-block
         llvmCode.append("then").append(labelID).append(":\n");
+        prevLabel = "then"+labelID;
         node.getBlocks().get(0).accept(this);
         llvmCode.append("\tbr label %ifCont").append(labelID).append("\n");
 
         // else-block
         llvmCode.append("else").append(labelID).append(":\n");
         if (node.hasElse()) {
+            prevLabel = "else"+labelID;
             node.getElseBlock().accept(this);
         }
 
@@ -190,11 +215,12 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
                 ("Variable type unknown.")).accept(this);
         int labelID = getNextLabelID();
 
-        // loop start
+        // start the loop
+        llvmCode.append("\tbr label %loop").append(labelID).append("\n");
         llvmCode.append("loop").append(labelID).append(":\n");
 
         // set var to from
-        String fromVal = getConstantOrVariableValue(node.getFrom());
+        String fromVal = getConstantOrRegister(node.getFrom());
 
         // generate the phi instruction for our iteration variable
         llvmCode.append("\t").append(itVar).append(" = phi ").append(itType);
@@ -202,7 +228,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
         llvmCode.append(" [").append(nextIt).append(", %loopBody").append(labelID).append("]\n");
 
         // check if i reached the to-value yet
-        String toVal = getConstantOrVariableValue(node.getTo());
+        String toVal = getConstantOrRegister(node.getTo());
         String cmpResult = getNextRegister();
         llvmCode.append("\t").append(cmpResult).append(" = icmp sle ").append(PrimitiveTypes.LLVM_INT);
         llvmCode.append(" ").append(itVar).append(", ").append(toVal).append("\n");
@@ -214,7 +240,9 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
 
         // loop body
         llvmCode.append("loopBody").append(labelID).append(":\n");
+        prevLabel = "loopBody"+labelID;
         node.getBlock().accept(this);
+
         // increment the iteration variable
         llvmCode.append("\t").append(nextIt).append(" = add ").append(PrimitiveTypes.LLVM_INT).append(" 1, ").append
                 (itVar).append("\n");
@@ -234,18 +262,17 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
                 map(arg -> arg.getType().orElseThrow(() -> new InsufficientPreprocessingException("Argument types not" +
                         " determined."))).
                 collect(Collectors.toList());
-        ASTType retType = node.getScope().getReturnType(node.getFunction().getName(), argTypes).orElseThrow(() -> new
+        ASTType retType = node.getScope().getReturnType(node.getFunction(), argTypes).orElseThrow(() -> new
                 InsufficientPreprocessingException("Function return type unknown."));
 
         // retrieve the appropriate llvm instruction
         StringBuilder callBuilder = new StringBuilder();
-        Optional<String> llvmInstruction = MyunCoreScope.getLLVMOperation(node.getFunction().getName(), argTypes,
+        Optional<String> llvmInstruction = MyunCoreScope.getLLVMOperation(node.getFunction(), argTypes,
                 retType);
         if (llvmInstruction.isPresent()) {
             callBuilder.append(llvmInstruction.get()).append(" ");
         } else {
-            callBuilder.append("call ").append(retType.accept(this)).append(" @").append(node.getFunction().getName()
-            ).append("(");
+            callBuilder.append("call ").append(retType.accept(this)).append(" @").append(node.getFunction()).append("(");
         }
 
         // go through the function arguments and create code to evaluate the expressions
@@ -253,7 +280,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
             ASTExpression arg = node.getArgs().get(i);
 
             // generate code for the argument evaluation if necessary
-            String argVal = getConstantOrVariableValue(arg);
+            String argVal = getConstantOrRegister(arg);
 
             // for native llvm instructions we do not need to annotate the type
             if (!llvmInstruction.isPresent()) {
@@ -280,16 +307,17 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
     @Override
     public String visit(ASTFuncDef node) {
         // function definition
-        ASTType returnType = node.getReturnType().orElseThrow(() -> new InsufficientPreprocessingException("Return " +
-                "type not determined."));
+        ASTType returnType = node.getReturnType().orElseThrow(() ->
+                new InsufficientPreprocessingException("Return type not determined."));
+        // FIXME: doesn't support overloaded functions (TODO: add suffix for types)
         llvmCode.append("define ").append(returnType.accept(this)).append(" @").append(node.getName());
 
         // params
         llvmCode.append("(");
         for (int i = 0; i < node.getParameters().size(); i++) {
             ASTVariable paramVar = node.getParameters().get(i);
-            ASTType paramType = paramVar.getScope().getVariableType(paramVar).orElseThrow(() -> new
-                    InsufficientPreprocessingException("Parameter type not determined."));
+            ASTType paramType = paramVar.getType().orElseThrow(() ->
+                    new InsufficientPreprocessingException("Parameter type not determined."));
 
             llvmCode.append(paramType.accept(this)).append(" ").append(paramVar.accept(this));
 
@@ -301,21 +329,20 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
         llvmCode.append("entry:\n");
         prevLabel = "entry";
 
-        // TODO: allocate space for mutable variables
+        // TODO: maybe make parameter variables mutable?
         node.getBlock().accept(this);
 
-        // FIXME: default values for non-basic data types
-        llvmCode.append("\tret ").append(returnType.accept(this)).append(" 0\n");
-        llvmCode.append("}\n");
+        llvmCode.append("\tunreachable\n");
+        llvmCode.append("}\n\n");
 
         return null;
     }
 
     @Override
     public String visit(ASTFuncReturn node) {
-        ASTType retType = node.getExpr().getType().orElseThrow(() -> new InsufficientPreprocessingException("Return " +
-                "type not determined."));
-        String retVal = getConstantOrVariableValue(node.getExpr());
+        ASTType retType = node.getExpr().getType().
+                orElseThrow(() -> new InsufficientPreprocessingException("Return type not determined."));
+        String retVal = getConstantOrRegister(node.getExpr());
         llvmCode.append("\tret ").append(retType.accept(this)).append(" ").append(retVal).append("\n");
         return null;
     }
@@ -327,32 +354,74 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
 
     @Override
     public String visit(ASTLoopBreak node) {
+        // TODO: implement me! (new attribute: loopExit stores label)
         throw new RuntimeException("Loop breaks not implemented yet.");
     }
 
     @Override
     public String visit(ASTScript node) {
-        // scripts are main functions in Myun
-        llvmCode.append("define ").append(PrimitiveTypes.LLVM_INT).append(" @main() {\n");
-
-        // generate llvm code for the script content
+        // the script function returns an integer (default 0)
+        llvmCode.append("define ").append(PrimitiveTypes.LLVM_INT).append(" @").append(node.getName()).append("() {\n");
         node.getBlock().accept(this);
-
-        // return the last evaluated statement
         llvmCode.append("\tret ").append(PrimitiveTypes.LLVM_INT).append(" 0\n");
+        llvmCode.append("}\n\n");
 
-        // done
+        // the main function prints the result of the script
+        llvmCode.append("define ").append(PrimitiveTypes.LLVM_INT).append(" @main() {\n");
+        llvmCode.append("\t%1 = call ").append(PrimitiveTypes.LLVM_INT).append(" @").append(node.getName()).append("()\n");
+        llvmCode.append("\t%2 = call i32 (i8*, ...) ");
+        llvmCode.append("@printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str, i32 0, i32 0), i32 %1)\n");
+        llvmCode.append("\tret ").append(PrimitiveTypes.LLVM_INT).append(" 0\n");
         llvmCode.append("}\n");
+
         return null;
     }
 
     @Override
     public String visit(ASTVariable node) {
-        return "%" + node.getName();
+        if (node.getScope().isAssignable(node)) {
+            // for mutable variables we need to load the value from the stack
+            String type = node.getType().
+                    orElseThrow(() -> new InsufficientPreprocessingException("Return type not determined.")).
+                    accept(this);
+            return "load " + type + ", " +  type + "* %" + node.getName();
+        }
+        else {
+            // for unmutable variables we can simply take the register where they are stored
+            return "%"+node.getName();
+        }
     }
 
     @Override
     public String visit(ASTWhileLoop node) {
-        throw new RuntimeException("While loops not implemented yet.");
+        int labelID = getNextLabelID();
+
+        // start the loop
+        llvmCode.append("\tbr label %loop").append(labelID).append("\n");
+        llvmCode.append("loop").append(labelID).append(":\n");
+
+        // check the condition
+        String condVal = this.getConstantOrRegister(node.getCondition());
+        String cmpResult = getNextRegister();
+
+        llvmCode.append("\t").append(cmpResult).append(" = icmp eq ").append(PrimitiveTypes.LLVM_BOOL);
+        llvmCode.append(" 1, ").append(condVal).append("\n");
+
+        // jump out of loop when condition reached
+        llvmCode.append("\tbr i1 ").append(cmpResult);
+        llvmCode.append(", label %loopBody").append(labelID);
+        llvmCode.append(", label %loopCont").append(labelID).append("\n");
+
+        // loop body
+        llvmCode.append("loopBody").append(labelID).append(":\n");
+        prevLabel = "loopBody"+labelID;
+        node.getBlock().accept(this);
+        llvmCode.append("\tbr label %loop").append(labelID).append("\n");
+
+        // loop end
+        llvmCode.append("loopCont").append(labelID).append(":\n");
+        prevLabel = "loopCont" + labelID;
+
+        return null;
     }
 }

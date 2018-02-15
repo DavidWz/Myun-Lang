@@ -23,7 +23,7 @@ public class UndeclaredFunctionCalledException extends RuntimeException {
     @Override
     public String getMessage() {
         StringBuilder errorMsg = new StringBuilder();
-        errorMsg.append("Error: Undeclared function ").append(funcCall.getFunction().getName());
+        errorMsg.append("Error: Undeclared function ").append(funcCall.getFunction());
         errorMsg.append("(");
         for (int i = 0; i < paramTypes.size(); i++) {
             errorMsg.append(paramTypes.get(0).accept(prettyPrinter));

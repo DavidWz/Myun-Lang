@@ -34,9 +34,15 @@ public class ScopeInitializer implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTBlock node) {
         node.setScope(currentScope);
+        Scope parentScope = currentScope;
+
+        // blocks always open their own scope
+        currentScope = new Scope(parentScope);
         node.getStatements().forEach(stmt -> stmt.accept(this));
         node.getFuncReturn().ifPresent(fR -> fR.accept(this));
         node.getLoopBreak().ifPresent(lB -> lB.accept(this));
+
+        currentScope = parentScope;
         return null;
     }
 
@@ -44,23 +50,21 @@ public class ScopeInitializer implements ASTVisitor<Void> {
     public Void visit(ASTBranch node) {
         node.setScope(currentScope);
         node.getConditions().forEach(c -> c.accept(this));
-
-        Scope parentScope = currentScope;
-        for (ASTBlock block : node.getBlocks()) {
-            currentScope = new Scope(parentScope);
-            block.accept(this);
-            currentScope = parentScope;
-        }
-
+        node.getBlocks().forEach(b -> b.accept(this));
         return null;
     }
 
     @Override
     public Void visit(ASTCompileUnit node) {
         node.setScope(currentScope);
+        Scope parentScope = currentScope;
+
+        // compile units have their own scope
         currentScope = new Scope(currentScope);
         node.getFuncDefs().forEach(funcDef -> funcDef.accept(this));
         node.getScript().accept(this);
+
+        currentScope = parentScope;
         return null;
     }
 
@@ -73,10 +77,10 @@ public class ScopeInitializer implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTForLoop node) {
         node.setScope(currentScope);
-
         Scope parentScope = currentScope;
-        currentScope = new Scope(parentScope);
 
+        // for loops open their own scope because they declare the iteration variable
+        currentScope = new Scope(parentScope);
         node.getVariable().accept(this);
         node.getFrom().accept(this);
         node.getTo().accept(this);
@@ -89,7 +93,6 @@ public class ScopeInitializer implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTFuncCall node) {
         node.setScope(currentScope);
-        node.getFunction().accept(this);
         node.getArgs().forEach(arg -> arg.accept(this));
         return null;
     }
@@ -97,8 +100,10 @@ public class ScopeInitializer implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTFuncDef node) {
         node.setScope(currentScope);
-
         Scope parentScope = currentScope;
+
+        // function definitions have their own scope
+        // so that parameter variables do not interfere with other function parameters
         currentScope = new Scope(parentScope);
 
         node.getParameters().forEach(param -> {
@@ -149,15 +154,8 @@ public class ScopeInitializer implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTWhileLoop node) {
         node.setScope(currentScope);
-
-        Scope parentScope = currentScope;
-        currentScope = new Scope(parentScope);
-
         node.getCondition().accept(this);
         node.getBlock().accept(this);
-
-        currentScope = parentScope;
-
         return null;
     }
 }

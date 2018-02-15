@@ -3,6 +3,7 @@ package myun.scope;
 import myun.AST.ASTBasicType;
 import myun.AST.ASTFuncType;
 import myun.AST.ASTType;
+import myun.AST.FuncHeader;
 import myun.type.PrimitiveTypes;
 
 import java.util.*;
@@ -45,8 +46,9 @@ public class MyunCoreScope extends Scope {
     }
 
     private void declareAndSetLLVM(String name, ASTFuncType type, String llvm) {
-        declareFunction(name, type);
-        llvmInstructions.put(new FuncHeader(name, type), llvm);
+        FuncHeader funcHeader = new FuncHeader(name, type);
+        declareFunction(funcHeader, null); // FIXME: ew a null value, this might blow up
+        llvmInstructions.put(funcHeader, llvm);
     }
 
     private void declarePredefinedFunctions() {
@@ -98,16 +100,16 @@ public class MyunCoreScope extends Scope {
                 "fcmp oeq " + PrimitiveTypes.LLVM_FLOAT);
         declareAndSetLLVM("isLess",
                 binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_BOOL),
-                "fcmp oslt " + PrimitiveTypes.LLVM_FLOAT);
+                "fcmp olt " + PrimitiveTypes.LLVM_FLOAT);
         declareAndSetLLVM("isLessEq",
                 binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_BOOL),
-                "fcmp osle " + PrimitiveTypes.LLVM_FLOAT);
+                "fcmp ole " + PrimitiveTypes.LLVM_FLOAT);
         declareAndSetLLVM("isGreater",
                 binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_BOOL),
-                "fcmp osgt " + PrimitiveTypes.LLVM_FLOAT);
+                "fcmp ogt " + PrimitiveTypes.LLVM_FLOAT);
         declareAndSetLLVM("isGreaterEq",
                 binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_BOOL),
-                "fcmp osge " + PrimitiveTypes.LLVM_FLOAT);
+                "fcmp oge " + PrimitiveTypes.LLVM_FLOAT);
 
         declareAndSetLLVM("plus",
                 binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT),

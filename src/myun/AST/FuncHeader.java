@@ -1,15 +1,13 @@
-package myun.scope;
-
-import myun.AST.ASTFuncType;
+package myun.AST;
 
 /**
  * Wrapper class for function name + type.
  */
-class FuncHeader {
+public class FuncHeader {
     private String name;
     private ASTFuncType type;
 
-    FuncHeader(String name, ASTFuncType type) {
+    public FuncHeader(String name, ASTFuncType type) {
         this.name = name;
         this.type = type;
     }
@@ -20,6 +18,17 @@ class FuncHeader {
 
     public ASTFuncType getType() {
         return type;
+    }
+
+    /**
+     * Checks if this function has the same name and parameter types as some other function header.
+     *
+     * @param other the other function header
+     * @return true iff both function headers have the same name and parameter types
+     */
+    public boolean hasSameNameAndParamTypes(FuncHeader other) {
+        if (other == null) return false;
+        return name.equals(other.name) && type.getParameterTypes().equals(other.getType().getParameterTypes());
     }
 
     @Override

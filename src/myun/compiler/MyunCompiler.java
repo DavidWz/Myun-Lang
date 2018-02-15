@@ -38,7 +38,7 @@ public class MyunCompiler {
         System.out.println(prettyPrinter.toString(program));
 
         // compile the code
-        System.out.println("### Compiling:");
+        System.out.println("### Compiled to: ### \n");
         MyunToLLVMTranslator llvmTranslator = new MyunToLLVMTranslator();
         String llvmCode = llvmTranslator.translateToLLVM(program);
         System.out.println(llvmCode);

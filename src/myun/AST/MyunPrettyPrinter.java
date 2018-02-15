@@ -115,7 +115,7 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
     public String visit(ASTFuncCall node) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(node.getFunction().accept(this)).append("(");
+        sb.append(node.getFunction()).append("(");
         for (int i = 0; i < node.getArgs().size(); i++) {
             ASTExpression expr = node.getArgs().get(i);
             sb.append(expr.accept(this));
