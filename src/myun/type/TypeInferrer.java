@@ -3,7 +3,6 @@ package myun.type;
 import myun.AST.*;
 import myun.AST.FuncHeader;
 import myun.scope.IllegalRedefineException;
-import myun.scope.UndeclaredFunctionCalledException;
 import myun.scope.UndeclaredVariableUsedException;
 import myun.scope.VariableInfo;
 
@@ -128,7 +127,7 @@ public class TypeInferrer implements ASTVisitor<Void> {
                     node);
         } else {
             // this variable does not exist yet, so declare it
-            node.getScope().declareVariable(node, true); // it is assignable by default
+            node.getScope().declareVariable(node); // it is assignable by default
         }
 
         return null;
@@ -181,8 +180,7 @@ public class TypeInferrer implements ASTVisitor<Void> {
         List<ASTType> paramTypes = node.getArgs().stream().
                 map(arg -> arg.getType().orElseThrow(() -> new CouldNotInferTypeException(arg))).
                 collect(Collectors.toList());
-        ASTType returnType = node.getScope().getReturnType(node.getFunction(), paramTypes).
-                orElseThrow(() -> new UndeclaredFunctionCalledException(node, paramTypes));
+        ASTType returnType =  node.getScope().getReturnType(node, node.getFunction(), paramTypes);
         node.setType(returnType);
 
         return null;
@@ -206,10 +204,10 @@ public class TypeInferrer implements ASTVisitor<Void> {
         FuncHeader funcHeader = new FuncHeader(node.getName(), funcType);
 
         // make sure this function has not been declared yet
-        if (node.getScope().containsFunction(funcHeader)) {
-            throw new IllegalRedefineException(node.getName(), node.getScope().getFirstDeclaredFunction(funcHeader)
-                    .orElseThrow(() -> new RuntimeException("Scope returned empty Optional even though " +
-                            "containsFunction returned true.")), node);
+        if (node.getScope().isDeclared(funcHeader)) {
+            throw new IllegalRedefineException(node.getName(),
+                    node.getScope().getFunctionInfo(node, funcHeader).getFuncDef(),
+                    node);
         }
 
         // declare this function

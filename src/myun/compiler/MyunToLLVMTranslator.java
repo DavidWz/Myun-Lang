@@ -264,8 +264,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
                 map(arg -> arg.getType().orElseThrow(() -> new InsufficientPreprocessingException("Argument types not" +
                         " determined."))).
                 collect(Collectors.toList());
-        ASTType retType = node.getScope().getReturnType(node.getFunction(), argTypes).orElseThrow(() -> new
-                InsufficientPreprocessingException("Function return type unknown."));
+        ASTType retType = node.getScope().getReturnType(node, node.getFunction(), argTypes);
 
         // retrieve the appropriate llvm instruction
         StringBuilder callBuilder = new StringBuilder();

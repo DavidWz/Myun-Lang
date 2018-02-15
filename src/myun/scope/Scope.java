@@ -62,14 +62,14 @@ public class Scope {
      * Furthermore, the type of the right-hand-side expression needs to have been inferred already.
      *
      * @param declaration the variable declaration
-     * @param isAssignable whether the variable is assignable
      * @throws IllegalRedefineException thrown when the variable has been declared in this scope already
      * @throws TypeNotInferredException thrown when the type of the expression has not been inferred yet
      */
-    public void declareVariable(ASTDeclaration declaration, boolean isAssignable) throws IllegalRedefineException, TypeNotInferredException {
+    public void declareVariable(ASTDeclaration declaration) throws IllegalRedefineException, TypeNotInferredException {
         ASTType type = declaration.getExpr().getType().orElseThrow(() ->
                 new TypeNotInferredException(declaration.getExpr()));
-        VariableInfo varInfo = new VariableInfo(type, isAssignable, declaration);
+        // user made declarations are always assignable
+        VariableInfo varInfo = new VariableInfo(type, true, declaration);
         declareVariable(declaration.getVariable(), varInfo);
     }
 
@@ -100,14 +100,14 @@ public class Scope {
      * @param funcHeader the function header
      * @return true iff it already has been declared
      */
-    public boolean containsFunction(FuncHeader funcHeader) {
+    public boolean isDeclared(FuncHeader funcHeader) {
         for (FuncHeader header : declaredFunctions.keySet()) {
             if (header.hasSameNameAndParamTypes(funcHeader)) {
                 return true;
             }
         }
 
-        return parent != null && parent.containsFunction(funcHeader);
+        return parent != null && parent.isDeclared(funcHeader);
     }
 
     /**
@@ -120,9 +120,9 @@ public class Scope {
      * @throws IllegalRedefineException thrown when the function has already been declared
      */
     public void declareFunction(FuncHeader funcHeader, ASTFuncDef funcDef) throws IllegalRedefineException {
-        if (containsFunction(funcHeader)) {
+        if (isDeclared(funcHeader)) {
             throw new IllegalRedefineException(funcHeader.getName(),
-                    getFirstDeclaredFunction(funcHeader).orElseThrow(() -> new RuntimeException("Optional was empty even though containsFunction returned true.")),
+                    getFunctionInfo(funcDef, funcHeader).getFuncDef(),
                     funcDef);
         }
         else {
@@ -131,42 +131,45 @@ public class Scope {
     }
 
     /**
-     * Returns the function definition that was first encountered for this function header.
+     * Returns the function information for the given function header.
+     * The function must have been defined already.
      *
+     * @param source the source node of the function header
      * @param funcHeader the function header
-     * @return the first encountered function definition or an empty optional if not found
+     * @return the function information
      */
-    public Optional<ASTFuncDef> getFirstDeclaredFunction(FuncHeader funcHeader) {
+    public FunctionInfo getFunctionInfo(ASTNode source, FuncHeader funcHeader) {
         if (declaredFunctions.containsKey(funcHeader)) {
-            return Optional.of(declaredFunctions.get(funcHeader).getFuncDef());
+            return declaredFunctions.get(funcHeader);
         }
         else if (parent != null) {
-            return parent.getFirstDeclaredFunction(funcHeader);
+            return parent.getFunctionInfo(source, funcHeader);
         }
         else {
-            return Optional.empty();
+            throw new UndeclaredFunctionCalledException(source, funcHeader.getType().getParameterTypes());
         }
     }
 
     /**
      * Determines the return type of a function given the parameter types.
      *
+     * @param source the source node of the function header
      * @param name the name of the function
      * @param paramTypes the types of the parameters
      * @return the return type or empty if not defined
      */
-    public Optional<ASTType> getReturnType(String name, List<ASTType> paramTypes) {
+    public ASTType getReturnType(ASTNode source, String name, List<ASTType> paramTypes) {
         for (FuncHeader header : declaredFunctions.keySet()) {
             if (header.getName().equals(name) && header.getType().getParameterTypes().equals(paramTypes)) {
-                return Optional.of(header.getType().getReturnType());
+                return header.getType().getReturnType();
             }
         }
 
         if (parent != null) {
-            return parent.getReturnType(name, paramTypes);
+            return parent.getReturnType(source, name, paramTypes);
         }
         else {
-            return Optional.empty();
+            throw new UndeclaredFunctionCalledException(source, paramTypes);
         }
     }
 }
