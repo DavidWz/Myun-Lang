@@ -4,11 +4,10 @@ package myun;
  * Abstract class for Myun exceptions.
  */
 public abstract class MyunException extends RuntimeException {
-    public MyunException() {
-        super();
+    protected MyunException() {
     }
 
-    public MyunException(String msg) {
+    protected MyunException(String msg) {
         super(msg);
     }
 }

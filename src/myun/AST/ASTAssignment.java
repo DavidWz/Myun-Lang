@@ -4,8 +4,8 @@ package myun.AST;
  * Represents an assignment of an expression to a variable.
  */
 public class ASTAssignment extends ASTStatement {
-    private ASTVariable variable;
-    private ASTExpression expr;
+    private final ASTVariable variable;
+    private final ASTExpression expr;
 
     /**
      * Creates a new AST assignment.

@@ -8,16 +8,17 @@ import myun.AST.ASTType;
  */
 public class VariableInfo {
     // the type of this variable
-    private ASTType type;
+    private final ASTType type;
 
     // whether it is possible to assign new values to that variable
-    private boolean isAssignable;
+    private final boolean isAssignable;
 
     // the node in which this variable was declared
     // e.g. ASTDeclaration, ASTForLoop, ASTFuncDef, ...
-    private ASTNode declaration;
+    private final ASTNode declaration;
 
     public VariableInfo(ASTType type, boolean isAssignable, ASTNode declaration) {
+        super();
         this.type = type;
         this.isAssignable = isAssignable;
         this.declaration = declaration;

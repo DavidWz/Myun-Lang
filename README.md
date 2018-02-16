@@ -41,7 +41,7 @@ exactly one [script](#Scripts).
 A script is basically the main method of that compilation unit.
 
 Myun does not support linking or referencing to other files yet, so you need to define all necessary
-function in that one file.
+functions in that one file.
 
 ### <a name="Functions">Functions</a>
 
@@ -53,7 +53,7 @@ Myun used Multiple Dispatch, so it is possible to overload function definitions 
 The correct function will be called depending on the types of the arguments to the function call.
 
 Currently, function parameters are immutable, so it is not possible to assign a new value to the 
-parameter variables.
+parameter variables. No two parameters in one function definition can have the same name. 
 
 Every execution path in the function body must contain a `return` instruction followed by an expression that has
 the same type as the return type of the function. `return` statements must be placed at the end of a block.

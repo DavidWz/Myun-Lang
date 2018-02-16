@@ -4,7 +4,7 @@ package myun.AST;
  * Represents a constant.
  */
 public class ASTConstant<CT> extends ASTExpression {
-    private CT value;
+    private final CT value;
 
     /**
      * Creates a new AST constant.

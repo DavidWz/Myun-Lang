@@ -3,7 +3,11 @@ package myun.type;
 /**
  * Library of primitive types.
  */
-public class PrimitiveTypes {
+public final class PrimitiveTypes {
+    private PrimitiveTypes() {
+        super();
+    }
+
     public static final String MYUN_BOOL = "Bool";
     public static final String MYUN_INT = "Int";
     public static final String MYUN_FLOAT = "Float";

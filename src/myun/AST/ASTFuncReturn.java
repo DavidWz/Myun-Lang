@@ -4,7 +4,7 @@ package myun.AST;
  * Represents a function return statement.
  */
 public class ASTFuncReturn extends ASTStatement {
-    private ASTExpression expr;
+    private final ASTExpression expr;
 
     /**
      * Creates a new AST function return.

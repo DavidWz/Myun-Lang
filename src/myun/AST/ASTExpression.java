@@ -6,7 +6,7 @@ import java.util.Optional;
  * Represents a general expression.
  */
 public abstract class ASTExpression extends ASTNode {
-    protected ASTType type;
+    private ASTType type;
 
     /**
      * Creates a new AST expression (without any type information)
@@ -14,7 +14,7 @@ public abstract class ASTExpression extends ASTNode {
      * @param lineNumber         The line in the source code where this node starts
      * @param charPositionInLine The character position of this node on its line
      */
-    public ASTExpression(int lineNumber, int charPositionInLine) {
+    ASTExpression(int lineNumber, int charPositionInLine) {
         super(lineNumber, charPositionInLine);
     }
 

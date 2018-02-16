@@ -6,14 +6,11 @@ import myun.AST.*;
  * Checks if all expressions in function return statements are of the same type as the declared function return type.
  */
 class ReturnTypeChecker implements ASTVisitor<Void> {
-    private ASTType targetType;
+    private final ASTType targetType;
 
-    ReturnTypeChecker() {
-        this.targetType = null;
-    }
-
-    void checkReturnType(ASTFuncDef node) {
-        this.targetType = node.getReturnType().orElseThrow(() -> new RuntimeException("Type inference not supported " +
+    ReturnTypeChecker(ASTFuncDef node) {
+        super();
+        targetType = node.getReturnType().orElseThrow(() -> new RuntimeException("Type inference not supported " +
                 "yet!"));
         node.accept(this);
     }

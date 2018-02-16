@@ -7,9 +7,10 @@ import myun.MyunException;
  * Thrown when an assignment is made even though the assigned variable is not assignable.
  */
 class NotAssignableException extends MyunException {
-    private ASTAssignment assignment;
+    private final ASTAssignment assignment;
 
-    public NotAssignableException(ASTAssignment assignment) {
+    NotAssignableException(ASTAssignment assignment) {
+        super();
         this.assignment = assignment;
     }
 

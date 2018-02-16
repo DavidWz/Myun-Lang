@@ -7,21 +7,22 @@ import myun.scope.Scope;
  */
 public abstract class ASTNode {
     // position in source code
-    protected int lineNumber;
-    protected int charPositionInLine;
+    private final int lineNumber;
+    private final int charPositionInLine;
 
     // scope to which this node belongs
-    protected Scope scope;
+    private Scope scope;
 
     /**
      * Creates a new AST node.
      * @param lineNumber The line in the source code where this node starts
      * @param charPositionInLine The character position of this node on its line
      */
-    public ASTNode(int lineNumber, int charPositionInLine) {
+    ASTNode(int lineNumber, int charPositionInLine) {
+        super();
         this.lineNumber = lineNumber;
         this.charPositionInLine = charPositionInLine;
-        this.scope = null;
+        scope = new Scope(null);
     }
 
     /**

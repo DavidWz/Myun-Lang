@@ -10,7 +10,7 @@ public abstract class ASTType extends ASTNode {
      * @param lineNumber         The line in the source code where this node starts
      * @param charPositionInLine The character position of this node on its line
      */
-    public ASTType(int lineNumber, int charPositionInLine) {
+    ASTType(int lineNumber, int charPositionInLine) {
         super(lineNumber, charPositionInLine);
     }
 }

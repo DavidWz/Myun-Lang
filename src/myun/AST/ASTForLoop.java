@@ -4,10 +4,10 @@ package myun.AST;
  * Represents a for loop.
  */
 public class ASTForLoop extends ASTStatement {
-    private ASTVariable variable;
-    private ASTExpression from;
-    private ASTExpression to;
-    private ASTBlock block;
+    private final ASTVariable variable;
+    private final ASTExpression from;
+    private final ASTExpression to;
+    private final ASTBlock block;
 
     /**
      * Creates a new AST for loop.

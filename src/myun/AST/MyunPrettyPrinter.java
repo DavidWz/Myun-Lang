@@ -7,6 +7,7 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
     private int indentLevel;
 
     public MyunPrettyPrinter() {
+        super();
         init();
     }
 
@@ -48,8 +49,8 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
 
     @Override
     public String visit(ASTBlock node) {
-        StringBuilder sb = new StringBuilder();
         indentLevel++;
+        StringBuilder sb = new StringBuilder();
         node.getStatements().forEach(stmt -> sb.append(stmt.accept(this)));
         node.getFuncReturn().ifPresent(fR -> sb.append(fR.accept(this)));
         node.getLoopBreak().ifPresent(lB -> sb.append(lB.accept(this)));
@@ -133,7 +134,7 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
             ASTExpression expr = node.getArgs().get(i);
             sb.append(expr.accept(this));
 
-            if (i < node.getArgs().size()-1) {
+            if (i < (node.getArgs().size() - 1)) {
                 sb.append(", ");
             }
         }
@@ -151,7 +152,7 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
             ASTExpression expr = node.getParameters().get(i);
             sb.append(expr.accept(this));
 
-            if (i < node.getParameters().size()-1) {
+            if (i < (node.getParameters().size() - 1)) {
                 sb.append(", ");
             }
         }
@@ -175,10 +176,10 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
     @Override
     public String visit(ASTFuncType node) {
         StringBuilder sb = new StringBuilder();
-        if (node.getParameterTypes().size() == 0) {
+        if (node.getParameterTypes().isEmpty()) {
             sb.append("()");
         }
-        else if (node.getParameterTypes().size() == 1) {
+        else if (1 == node.getParameterTypes().size()) {
             sb.append(node.getParameterTypes().get(0).accept(this));
         }
         else {

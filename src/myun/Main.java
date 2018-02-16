@@ -1,16 +1,17 @@
 package myun;
 
 import myun.compiler.MyunCompiler;
-import myun.AST.constraints.ViolatedConstraintException;
-import myun.type.TypeMismatchException;
-
 import java.io.IOException;
 
-public class Main {
+final class Main {
+    private Main() {
+        super();
+    }
 
-    public static void main(String[] args) throws IOException, ViolatedConstraintException, TypeMismatchException {
+    public static void main(String[] args) throws IOException {
         String inputFile = args[0];
         MyunCompiler compiler = new MyunCompiler();
+
         compiler.compileFromFile(inputFile);
     }
 }

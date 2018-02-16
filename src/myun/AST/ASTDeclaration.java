@@ -4,8 +4,8 @@ package myun.AST;
  * Represents a variable declaration.
  */
 public class ASTDeclaration extends ASTStatement {
-    private ASTVariable variable;
-    private ASTExpression expr;
+    private final ASTVariable variable;
+    private final ASTExpression expr;
 
     /**
      * Creates a new AST declaration.

@@ -4,7 +4,7 @@ package myun.AST;
  * Represents a variable.
  */
 public class ASTVariable extends ASTExpression {
-    private String name;
+    private final String name;
 
     /**
      * Creates a new AST variable.
@@ -29,8 +29,12 @@ public class ASTVariable extends ASTExpression {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if ((null == o) || (getClass() != o.getClass())) {
+            return false;
+        }
 
         ASTVariable that = (ASTVariable) o;
 

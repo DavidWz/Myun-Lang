@@ -4,8 +4,8 @@ package myun.AST;
  * Represents a while loop.
  */
 public class ASTWhileLoop extends ASTStatement {
-    private ASTExpression condition;
-    private ASTBlock block;
+    private final ASTExpression condition;
+    private final ASTBlock block;
 
     /**
      * Creates a new AST while loop.

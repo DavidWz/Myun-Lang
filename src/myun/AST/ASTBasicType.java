@@ -4,7 +4,7 @@ package myun.AST;
  * Represents a basic/primitive type in Myun.
  */
 public class ASTBasicType extends ASTType {
-    private String name;
+    private final String name;
 
     /**
      * Creates a new AST type.
@@ -30,8 +30,12 @@ public class ASTBasicType extends ASTType {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if ((null == o) || (getClass() != o.getClass())) {
+            return false;
+        }
 
         ASTBasicType that = (ASTBasicType) o;
 

@@ -6,10 +6,10 @@ import java.util.List;
  * Represents a conditional branch.
  */
 public class ASTBranch extends ASTStatement {
-    private List<ASTExpression> conditions;
+    private final List<ASTExpression> conditions;
     // there might be one more block than there are conditions
     // the last block then corresponds to the else-branch
-    private List<ASTBlock> blocks;
+    private final List<ASTBlock> blocks;
 
     /**
      * Creates a new AST branch.

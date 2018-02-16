@@ -12,10 +12,10 @@ import java.util.*;
  * Offers the predefined scope with all predefined methods.
  * For example, it contains arithmetic methods, such as plus, minus, etc.
  */
-public class MyunCoreScope extends Scope {
+public final class MyunCoreScope extends Scope {
     private static final MyunCoreScope instance = new MyunCoreScope();
 
-    private Map<FuncHeader, String> llvmInstructions;
+    private final Map<FuncHeader, String> llvmInstructions;
 
     private MyunCoreScope() {
         super(null);
@@ -25,6 +25,10 @@ public class MyunCoreScope extends Scope {
 
     public static MyunCoreScope getInstance() {
         return instance;
+    }
+
+    private Map<FuncHeader, String> getLlvmInstructions() {
+        return llvmInstructions;
     }
 
     private ASTFuncType binaryFunction(String param1, String param2, String result) {
@@ -46,8 +50,8 @@ public class MyunCoreScope extends Scope {
     }
 
     private void declareAndSetLLVM(String name, ASTFuncType type, String llvm) {
-        FuncHeader funcHeader = new FuncHeader(name, type);
-        declareFunction(funcHeader, null); // FIXME: ew a null value, this might blow up
+        FuncHeader funcHeader = new FuncHeader(name, type.getParameterTypes());
+        declareFunction(funcHeader, type);
         llvmInstructions.put(funcHeader, llvm);
     }
 
@@ -153,10 +157,10 @@ public class MyunCoreScope extends Scope {
      * @param argTypes the types of the arguments
      * @return the native LLVM instruction for that call or empty if none found
      */
-    public static Optional<String> getLLVMOperation(String name, List<ASTType> argTypes, ASTType retType) {
-        FuncHeader header = new FuncHeader(name, new ASTFuncType(-1, -1, argTypes, retType));
-        if (instance.llvmInstructions.containsKey(header)) {
-            return Optional.of(instance.llvmInstructions.get(header));
+    public static Optional<String> getLLVMOperation(String name, List<ASTType> argTypes) {
+        FuncHeader header = new FuncHeader(name, argTypes);
+        if (instance.getLlvmInstructions().containsKey(header)) {
+            return Optional.of(instance.getLlvmInstructions().get(header));
         } else {
             return Optional.empty();
         }

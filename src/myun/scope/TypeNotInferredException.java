@@ -7,9 +7,10 @@ import myun.MyunException;
  * Thrown when a type was expected, but not inferred yet.
  */
 public class TypeNotInferredException extends MyunException {
-    private ASTNode node;
+    private final ASTNode node;
 
     public TypeNotInferredException(ASTNode node) {
+        super();
         this.node = node;
     }
 

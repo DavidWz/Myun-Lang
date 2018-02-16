@@ -1,7 +1,6 @@
 package myun.compiler;
 
 import myun.AST.*;
-import myun.AST.constraints.ViolatedConstraintException;
 import myun.scope.MyunCoreScope;
 import myun.scope.ScopeInitializer;
 import myun.type.TypeInferrer;
@@ -10,12 +9,17 @@ import java.io.*;
 
 /**
  * Compiles a myun source file to LLVM code.
+ * @noinspection UseOfSystemOutOrSystemErr
  */
 public class MyunCompiler {
-    public MyunCompiler() {
-    }
 
-    public void compileFromFile(String inputFile) throws IOException, ViolatedConstraintException {
+    /**
+     * Compiles myun code from a file and writes the resulting llvm ir code to an output file.
+     *
+     * @param inputFile the path to the input file
+     * @throws IOException thrown when the file could not be loaded or written to
+     */
+    public void compileFromFile(String inputFile) throws IOException {
         // make sure the input file is myun source code
         if (!inputFile.endsWith(".myun")) {
             throw new RuntimeException("Input file is not a myun source file.");
@@ -26,8 +30,7 @@ public class MyunCompiler {
         ASTCompileUnit program = astGen.parseFile(inputFile);
 
         // init the scopes
-        ScopeInitializer scopeInitializer = new ScopeInitializer();
-        scopeInitializer.initScope(program, MyunCoreScope.getInstance());
+        new ScopeInitializer(program, MyunCoreScope.getInstance());
 
         // infer the types
         TypeInferrer typeInferrer = new TypeInferrer();
@@ -49,4 +52,5 @@ public class MyunCompiler {
         writer.write(llvmCode);
         writer.close();
     }
+
 }

@@ -8,11 +8,14 @@ import myun.AST.*;
 public class ScopeInitializer implements ASTVisitor<Void> {
     private Scope currentScope;
 
-    public ScopeInitializer() {
-        currentScope = null;
-    }
-
-    public void initScope(ASTCompileUnit program, Scope parentScope) {
+    /**
+     * Initializes the scope of the given program.
+     *
+     * @param program the program
+     * @param parentScope the parent scope
+     */
+    public ScopeInitializer(ASTCompileUnit program, Scope parentScope) {
+        super();
         currentScope = parentScope;
         program.accept(this);
     }

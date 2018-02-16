@@ -7,8 +7,8 @@ import java.util.List;
  * Represents a function call.
  */
 public class ASTFuncCall extends ASTExpression {
-    private String function;
-    private List<ASTExpression> args;
+    private final String function;
+    private final List<ASTExpression> args;
 
     /**
      * Creates a new AST function call
@@ -32,7 +32,7 @@ public class ASTFuncCall extends ASTExpression {
      * @param function           The called function
      * @param args               A list of arguments.
      */
-    public ASTFuncCall(int lineNumber, int charPositionInLine,  String function, ASTExpression... args) {
+    public ASTFuncCall(int lineNumber, int charPositionInLine, String function, ASTExpression... args) {
         super(lineNumber, charPositionInLine);
         this.function = function;
         this.args = Arrays.asList(args);

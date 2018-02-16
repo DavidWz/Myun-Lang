@@ -10,15 +10,16 @@ import java.util.List;
 /**
  * Thrown when an unknown function is called.
  */
-public class UndeclaredFunctionCalledException extends MyunException {
-    private ASTNode source;
-    private List<ASTType> paramTypes;
-    private MyunPrettyPrinter prettyPrinter;
+class UndeclaredFunctionCalledException extends MyunException {
+    private final ASTNode source;
+    private final List<ASTType> paramTypes;
+    private final MyunPrettyPrinter prettyPrinter;
 
-    public UndeclaredFunctionCalledException(ASTNode source, List<ASTType> paramTypes) {
+    UndeclaredFunctionCalledException(ASTNode source, List<ASTType> paramTypes) {
+        super();
         this.source = source;
         this.paramTypes = paramTypes;
-        this.prettyPrinter = new MyunPrettyPrinter();
+        prettyPrinter = new MyunPrettyPrinter();
     }
 
     @Override
@@ -28,7 +29,7 @@ public class UndeclaredFunctionCalledException extends MyunException {
         errorMsg.append("(");
         for (int i = 0; i < paramTypes.size(); i++) {
             errorMsg.append(paramTypes.get(0).accept(prettyPrinter));
-            if (i < paramTypes.size() - 1) {
+            if (i < (paramTypes.size() - 1)) {
                 errorMsg.append(", ");
             }
         }

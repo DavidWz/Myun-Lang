@@ -6,20 +6,10 @@ import myun.AST.*;
  * Checks whether each program flow in a function has a return statement.
  */
 class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boolean> {
-    private final static String ERROR_MSG = "Each execution path in a function must have a return statement.";
-    private ASTFuncDef funcWithoutReturn;
-
-    FunctionHasReturnConstraint() {
-        this.funcWithoutReturn = null;
-    }
 
     @Override
-    public void check(ASTCompileUnit compileUnit) throws ViolatedConstraintException {
-        funcWithoutReturn = null;
-
-        if (!compileUnit.accept(this)) {
-            throw new ViolatedConstraintException(ERROR_MSG, funcWithoutReturn);
-        }
+    public void check(ASTCompileUnit compileUnit) throws ReturnMissingException {
+        compileUnit.accept(this);
     }
 
     @Override
@@ -42,7 +32,7 @@ class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boolean> {
         // if there is no return statement at the end
         // we need to traverse the statements from
         else {
-            for (int i = node.getStatements().size() - 1; i >= 0; i--) {
+            for (int i = node.getStatements().size() - 1; 0 <= i; i--) {
                 if (node.getStatements().get(i).accept(this)) {
                     return true;
                 }
@@ -83,11 +73,10 @@ class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boolean> {
 
     @Override
     public Boolean visit(ASTFuncDef node) {
-        boolean hasReturn = node.getBlock().accept(this);
-        if (!hasReturn) {
-            this.funcWithoutReturn = node;
+        if (!node.getBlock().accept(this)) {
+            throw new ReturnMissingException(node);
         }
-        return hasReturn;
+        return true;
     }
 
     @Override

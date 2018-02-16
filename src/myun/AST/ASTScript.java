@@ -4,8 +4,8 @@ package myun.AST;
  * Represents the script part of a compilation unit.
  */
 public class ASTScript extends ASTNode {
-    private String name;
-    private ASTBlock block;
+    private final String name;
+    private final ASTBlock block;
 
     /**
      * Creates a new AST node.

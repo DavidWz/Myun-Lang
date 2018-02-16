@@ -8,19 +8,20 @@ import java.util.*;
  * Represents the scope of a code block.
  */
 public class Scope {
-    private Scope parent;
-    private Map<ASTVariable, VariableInfo> declaredVariables;
-    private Map<FuncHeader, FunctionInfo> declaredFunctions;
+    private final Scope parent;
+    private final Map<ASTVariable, VariableInfo> declaredVariables;
+    private final Map<FuncHeader, FunctionInfo> declaredFunctions;
 
     /**
      * Creates a new scope with a given parent.
      *
      * @param parent a parent or null if this is a root scope
      */
-    Scope(Scope parent) {
+    public Scope(Scope parent) {
+        super();
         this.parent = parent;
-        this.declaredVariables = new HashMap<>();
-        this.declaredFunctions = new HashMap<>();
+        declaredVariables = new HashMap<>();
+        declaredFunctions = new HashMap<>();
     }
 
     /**
@@ -30,7 +31,7 @@ public class Scope {
      * @return true iff the variable has been declared
      */
     public boolean isDeclared(ASTVariable var) {
-        return declaredVariables.containsKey(var) || (parent != null && parent.isDeclared(var));
+        return declaredVariables.containsKey(var) || ((null != parent) && parent.isDeclared(var));
     }
 
     /**
@@ -86,7 +87,7 @@ public class Scope {
         if (declaredVariables.containsKey(var)) {
             return declaredVariables.get(var);
         }
-        else if (parent != null) {
+        else if (null != parent) {
             // search for it in the parent scope
             return parent.getVarInfo(var);
         } else {
@@ -101,19 +102,15 @@ public class Scope {
      * @return true iff it already has been declared
      */
     public boolean isDeclared(FuncHeader funcHeader) {
-        for (FuncHeader header : declaredFunctions.keySet()) {
-            if (header.hasSameNameAndParamTypes(funcHeader)) {
-                return true;
-            }
-        }
-
-        return parent != null && parent.isDeclared(funcHeader);
+        return declaredFunctions.containsKey(funcHeader) || ((null != parent) && parent.isDeclared
+                (funcHeader));
     }
 
     /**
      * Declares a function in the current scope.
      * Can only be called when the function has not been declared already.
      * However, functions with the same name can be re-declared if the parameter types are different.
+     * Furthermore, the type of the function needs to have been inferred already.
      *
      * @param funcHeader the function header
      * @param funcDef the function definition
@@ -126,7 +123,26 @@ public class Scope {
                     funcDef);
         }
         else {
-            declaredFunctions.put(funcHeader, new FunctionInfo(funcDef));
+            declaredFunctions.put(funcHeader, new FunctionInfo(funcDef.getType().
+                    orElseThrow(() -> new TypeNotInferredException(funcDef)),
+                    funcDef));
+        }
+    }
+
+    /**
+     * Declares an implicitly defined function.
+     *
+     * @param funcHeader the function header
+     * @param funcType the function type
+     */
+    void declareFunction(FuncHeader funcHeader, ASTFuncType funcType) {
+        if (isDeclared(funcHeader)) {
+            throw new IllegalRedefineException(funcHeader.getName(),
+                    getFunctionInfo(funcType, funcHeader).getFuncDef(),
+                    funcType);
+        }
+        else {
+            declaredFunctions.put(funcHeader, new FunctionInfo(funcType, null));
         }
     }
 
@@ -143,35 +159,11 @@ public class Scope {
         if (declaredFunctions.containsKey(funcHeader)) {
             return declaredFunctions.get(funcHeader);
         }
-        else if (parent != null) {
+        else if (null != parent) {
             return parent.getFunctionInfo(source, funcHeader);
         }
         else {
-            throw new UndeclaredFunctionCalledException(source, funcHeader.getType().getParameterTypes());
-        }
-    }
-
-    /**
-     * Determines the return type of a function given the parameter types.
-     *
-     * @param source the source node of the function header
-     * @param name the name of the function
-     * @param paramTypes the types of the parameters
-     * @return the return type or empty if not defined
-     * @throws UndeclaredFunctionCalledException thrown when the function has not been declared
-     */
-    public ASTType getReturnType(ASTNode source, String name, List<ASTType> paramTypes) {
-        for (FuncHeader header : declaredFunctions.keySet()) {
-            if (header.getName().equals(name) && header.getType().getParameterTypes().equals(paramTypes)) {
-                return header.getType().getReturnType();
-            }
-        }
-
-        if (parent != null) {
-            return parent.getReturnType(source, name, paramTypes);
-        }
-        else {
-            throw new UndeclaredFunctionCalledException(source, paramTypes);
+            throw new UndeclaredFunctionCalledException(source, funcHeader.getParameterTypes());
         }
     }
 }

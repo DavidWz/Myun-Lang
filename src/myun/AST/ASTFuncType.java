@@ -6,8 +6,8 @@ import java.util.List;
  * Represents a function type.
  */
 public class ASTFuncType extends ASTType {
-    private List<ASTType> parameterTypes;
-    private ASTType returnType;
+    private final List<ASTType> parameterTypes;
+    private final ASTType returnType;
 
     /**
      * Creates a new AST type.
@@ -36,19 +36,26 @@ public class ASTFuncType extends ASTType {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if ((null == o) || (getClass() != o.getClass())) {
+            return false;
+        }
 
-        ASTFuncType that = (ASTFuncType) o;
+        ASTFuncType funcType = (ASTFuncType) o;
 
-        return getParameterTypes().equals(that.getParameterTypes()) && (getReturnType() != null ? getReturnType()
-                .equals(that.getReturnType()) : that.getReturnType() == null);
+        if (!getParameterTypes().equals(funcType.getParameterTypes())) {
+            return false;
+        }
+        return getReturnType().equals(funcType.getReturnType());
+
     }
 
     @Override
     public int hashCode() {
         int result = getParameterTypes().hashCode();
-        result = 31 * result + (getReturnType() != null ? getReturnType().hashCode() : 0);
+        result = (31 * result) + getReturnType().hashCode();
         return result;
     }
 }

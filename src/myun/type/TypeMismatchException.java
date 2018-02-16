@@ -8,18 +8,17 @@ import myun.MyunException;
 /**
  * Exception thrown when two types mismatch.
  */
-public class TypeMismatchException extends MyunException {
-    private ASTType actual;
-    private ASTType expected;
-    private ASTNode reason;
-    private MyunPrettyPrinter prettyPrinter;
+class TypeMismatchException extends MyunException {
+    private final ASTType actual;
+    private final ASTType expected;
+    private final ASTNode reason;
+    private final MyunPrettyPrinter prettyPrinter;
 
     TypeMismatchException(ASTType actual, ASTType expected, ASTNode reason) {
-        super();
         this.actual = actual;
         this.expected = expected;
         this.reason = reason;
-        this.prettyPrinter = new MyunPrettyPrinter();
+        prettyPrinter = new MyunPrettyPrinter();
     }
 
     @Override

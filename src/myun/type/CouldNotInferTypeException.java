@@ -8,12 +8,13 @@ import myun.MyunException;
  * Thrown when the type of an expression could not be inferred.
  */
 class CouldNotInferTypeException extends MyunException {
-    private ASTExpression expression;
-    private MyunPrettyPrinter prettyPrinter;
+    private final ASTExpression expression;
+    private final MyunPrettyPrinter prettyPrinter;
 
     CouldNotInferTypeException(ASTExpression expr) {
-        this.expression = expr;
-        this.prettyPrinter = new MyunPrettyPrinter();
+        super();
+        expression = expr;
+        prettyPrinter = new MyunPrettyPrinter();
     }
 
     @Override

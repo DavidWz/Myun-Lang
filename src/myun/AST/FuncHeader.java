@@ -1,51 +1,47 @@
 package myun.AST;
 
+import java.util.List;
+
 /**
- * Wrapper class for function name + type.
+ * Wrapper class for function name + parameter types.
  */
 public class FuncHeader {
-    private String name;
-    private ASTFuncType type;
+    private final String name;
+    private final List<ASTType> parameterTypes;
 
-    public FuncHeader(String name, ASTFuncType type) {
+    public FuncHeader(String name, List<ASTType> parameterTypes) {
+        super();
         this.name = name;
-        this.type = type;
+        this.parameterTypes = parameterTypes;
     }
 
     public String getName() {
         return name;
     }
 
-    public ASTFuncType getType() {
-        return type;
-    }
-
-    /**
-     * Checks if this function has the same name and parameter types as some other function header.
-     *
-     * @param other the other function header
-     * @return true iff both function headers have the same name and parameter types
-     */
-    public boolean hasSameNameAndParamTypes(FuncHeader other) {
-        if (other == null) return false;
-        return name.equals(other.name) && type.getParameterTypes().equals(other.getType().getParameterTypes());
+    public List<ASTType> getParameterTypes() {
+        return parameterTypes;
     }
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (this == o) {
+            return true;
+        }
+        if ((null == o) || (getClass() != o.getClass())) {
+            return false;
+        }
 
         FuncHeader that = (FuncHeader) o;
 
-        return getName().equals(that.getName()) && getType().equals(that.getType());
+        return getName().equals(that.getName()) && getParameterTypes().equals(that.getParameterTypes());
 
     }
 
     @Override
     public int hashCode() {
         int result = getName().hashCode();
-        result = 31 * result + getType().hashCode();
+        result = (31 * result) + getParameterTypes().hashCode();
         return result;
     }
 }

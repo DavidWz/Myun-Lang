@@ -8,17 +8,13 @@ import java.util.Optional;
  * Makes sure that in a function declaration there are no two parameters with the same variable name.
  */
 class NoDuplicateFunctionParamsConstraint implements Constraint, ASTVisitor<Optional<ASTVariable>> {
-    private static final String ERROR_MSG = "Parameter names in function declarations must be mutually exclusive.";
-
-    NoDuplicateFunctionParamsConstraint() {
-    }
 
     @Override
-    public void check(ASTCompileUnit compileUnit) throws ViolatedConstraintException {
+    public void check(ASTCompileUnit compileUnit) {
         Optional<ASTVariable> duplicate = compileUnit.accept(this);
 
         if (duplicate.isPresent()) {
-            throw new ViolatedConstraintException(ERROR_MSG, duplicate.get());
+            throw new DuplicateParametersException(duplicate.get());
         }
     }
 
