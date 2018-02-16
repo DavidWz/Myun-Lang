@@ -58,6 +58,9 @@ public class MyunCoreScope extends Scope {
         declareAndSetLLVM("or",
                 binaryFunction(PrimitiveTypes.MYUN_BOOL, PrimitiveTypes.MYUN_BOOL, PrimitiveTypes.MYUN_BOOL),
                 "or " + PrimitiveTypes.LLVM_BOOL);
+        declareAndSetLLVM("is",
+                binaryFunction(PrimitiveTypes.MYUN_BOOL, PrimitiveTypes.MYUN_BOOL, PrimitiveTypes.MYUN_BOOL),
+                "icmp eq " + PrimitiveTypes.LLVM_BOOL);
 
         declareAndSetLLVM("is",
                 binaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_BOOL),
