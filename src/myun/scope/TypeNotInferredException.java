@@ -1,14 +1,15 @@
 package myun.scope;
 
-import myun.AST.ASTExpression;
+import myun.AST.ASTNode;
+import myun.MyunException;
 
 /**
  * Thrown when a type was expected, but not inferred yet.
  */
-public class TypeNotInferredException extends RuntimeException {
-    private ASTExpression node;
+public class TypeNotInferredException extends MyunException {
+    private ASTNode node;
 
-    public TypeNotInferredException(ASTExpression node) {
+    public TypeNotInferredException(ASTNode node) {
         this.node = node;
     }
 

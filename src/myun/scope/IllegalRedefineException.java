@@ -1,11 +1,12 @@
 package myun.scope;
 
 import myun.AST.ASTNode;
+import myun.MyunException;
 
 /**
  * Thrown when a variable or function is illegally redefined.
  */
-public class IllegalRedefineException extends RuntimeException {
+public class IllegalRedefineException extends MyunException {
     private String name;
     private ASTNode originalNode;
     private ASTNode redefinedNode;

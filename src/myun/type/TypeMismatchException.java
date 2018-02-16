@@ -3,11 +3,12 @@ package myun.type;
 import myun.AST.ASTNode;
 import myun.AST.ASTType;
 import myun.AST.MyunPrettyPrinter;
+import myun.MyunException;
 
 /**
  * Exception thrown when two types mismatch.
  */
-public class TypeMismatchException extends RuntimeException {
+public class TypeMismatchException extends MyunException {
     private ASTType actual;
     private ASTType expected;
     private ASTNode reason;

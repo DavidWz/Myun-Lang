@@ -2,11 +2,12 @@ package myun.scope;
 
 import myun.AST.ASTVariable;
 import myun.AST.MyunPrettyPrinter;
+import myun.MyunException;
 
 /**
  * Thrown when a variable is used which has not been declared.
  */
-public class UndeclaredVariableUsedException extends RuntimeException {
+public class UndeclaredVariableUsedException extends MyunException {
     private ASTVariable variable;
     private MyunPrettyPrinter prettyPrinter;
 

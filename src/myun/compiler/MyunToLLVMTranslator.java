@@ -2,6 +2,7 @@ package myun.compiler;
 
 import myun.AST.*;
 import myun.scope.MyunCoreScope;
+import myun.scope.TypeNotInferredException;
 import myun.type.PrimitiveTypes;
 
 import java.util.List;
@@ -106,7 +107,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
         String exprVal = getConstantOrRegister(node.getExpr());
         String varName = node.getVariable().getName();
         String type = node.getVariable().getType().
-                orElseThrow(() -> new InsufficientPreprocessingException("Expression type unknown.")).
+                orElseThrow(() -> new TypeNotInferredException(node.getVariable())).
                 accept(this);
 
         // store the expression in the stack variable
@@ -196,7 +197,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
         String exprVal = getConstantOrRegister(node.getExpr());
         String varName = node.getVariable().getName();
         String type = node.getVariable().getType().
-                orElseThrow(() -> new InsufficientPreprocessingException("Expression type unknown.")).
+                orElseThrow(() -> new TypeNotInferredException(node.getVariable())).
                 accept(this);
 
         // allocate space for this variable on the stack if it is a declaration
@@ -213,8 +214,8 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
     public String visit(ASTForLoop node) {
         String nextIt = getNextRegister();
         String itVar = node.getVariable().accept(this);
-        String itType = node.getVariable().getType().orElseThrow(() -> new InsufficientPreprocessingException
-                ("Variable type unknown.")).accept(this);
+        String itType = node.getVariable().getType().orElseThrow(() -> new TypeNotInferredException
+                (node.getVariable())).accept(this);
         int labelID = getNextLabelID();
 
         // start the loop
@@ -261,8 +262,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
     public String visit(ASTFuncCall node) {
         // we need the return type and argument types of the function call
         List<ASTType> argTypes = node.getArgs().stream().
-                map(arg -> arg.getType().orElseThrow(() -> new InsufficientPreprocessingException("Argument types not" +
-                        " determined."))).
+                map(arg -> arg.getType().orElseThrow(() -> new TypeNotInferredException(arg))).
                 collect(Collectors.toList());
         ASTType retType = node.getScope().getReturnType(node, node.getFunction(), argTypes);
 
@@ -285,8 +285,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
 
             // for native llvm instructions we do not need to annotate the type
             if (!llvmInstruction.isPresent()) {
-                callBuilder.append(arg.getType().orElseThrow(() -> new InsufficientPreprocessingException("Argument " +
-                        "types not determined.")).accept(this));
+                callBuilder.append(arg.getType().orElseThrow(() -> new TypeNotInferredException(arg)).accept(this));
                 callBuilder.append(" ");
             }
 
@@ -309,7 +308,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
     public String visit(ASTFuncDef node) {
         // function definition
         ASTType returnType = node.getReturnType().orElseThrow(() ->
-                new InsufficientPreprocessingException("Return type not determined."));
+                new TypeNotInferredException(node));
         // FIXME: doesn't support overloaded functions (TODO: add suffix for types)
         llvmCode.append("define ").append(returnType.accept(this)).append(" @").append(node.getName());
 
@@ -318,7 +317,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
         for (int i = 0; i < node.getParameters().size(); i++) {
             ASTVariable paramVar = node.getParameters().get(i);
             ASTType paramType = paramVar.getType().orElseThrow(() ->
-                    new InsufficientPreprocessingException("Parameter type not determined."));
+                    new TypeNotInferredException(paramVar));
 
             llvmCode.append(paramType.accept(this)).append(" ").append(paramVar.accept(this));
 
@@ -342,7 +341,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
     @Override
     public String visit(ASTFuncReturn node) {
         ASTType retType = node.getExpr().getType().
-                orElseThrow(() -> new InsufficientPreprocessingException("Return type not determined."));
+                orElseThrow(() -> new TypeNotInferredException(node.getExpr()));
         String retVal = getConstantOrRegister(node.getExpr());
         llvmCode.append("\tret ").append(retType.accept(this)).append(" ").append(retVal).append("\n");
         return null;
@@ -383,7 +382,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String> {
         if (node.getScope().getVarInfo(node).isAssignable()) {
             // for mutable variables we need to load the value from the stack
             String type = node.getType().
-                    orElseThrow(() -> new InsufficientPreprocessingException("Return type not determined.")).
+                    orElseThrow(() -> new TypeNotInferredException(node)).
                     accept(this);
             return "load " + type + ", " +  type + "* %" + node.getName();
         }

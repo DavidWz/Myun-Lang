@@ -137,6 +137,7 @@ public class Scope {
      * @param source the source node of the function header
      * @param funcHeader the function header
      * @return the function information
+     * @throws UndeclaredFunctionCalledException thrown when the function has not been declared
      */
     public FunctionInfo getFunctionInfo(ASTNode source, FuncHeader funcHeader) {
         if (declaredFunctions.containsKey(funcHeader)) {
@@ -157,6 +158,7 @@ public class Scope {
      * @param name the name of the function
      * @param paramTypes the types of the parameters
      * @return the return type or empty if not defined
+     * @throws UndeclaredFunctionCalledException thrown when the function has not been declared
      */
     public ASTType getReturnType(ASTNode source, String name, List<ASTType> paramTypes) {
         for (FuncHeader header : declaredFunctions.keySet()) {

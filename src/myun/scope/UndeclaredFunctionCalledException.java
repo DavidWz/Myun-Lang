@@ -3,13 +3,14 @@ package myun.scope;
 import myun.AST.ASTNode;
 import myun.AST.ASTType;
 import myun.AST.MyunPrettyPrinter;
+import myun.MyunException;
 
 import java.util.List;
 
 /**
  * Thrown when an unknown function is called.
  */
-public class UndeclaredFunctionCalledException extends RuntimeException {
+public class UndeclaredFunctionCalledException extends MyunException {
     private ASTNode source;
     private List<ASTType> paramTypes;
     private MyunPrettyPrinter prettyPrinter;

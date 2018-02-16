@@ -18,8 +18,7 @@ class NoDuplicateFunctionParamsConstraint implements Constraint, ASTVisitor<Opti
         Optional<ASTVariable> duplicate = compileUnit.accept(this);
 
         if (duplicate.isPresent()) {
-            throw new ViolatedConstraintException(ERROR_MSG, duplicate.get().getLine(), duplicate.get()
-                    .getCharPositionInLine());
+            throw new ViolatedConstraintException(ERROR_MSG, duplicate.get());
         }
     }
 

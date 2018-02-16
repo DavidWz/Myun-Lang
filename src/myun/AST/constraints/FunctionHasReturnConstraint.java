@@ -18,8 +18,7 @@ class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boolean> {
         funcWithoutReturn = null;
 
         if (!compileUnit.accept(this)) {
-            throw new ViolatedConstraintException(ERROR_MSG, funcWithoutReturn.getLine(), funcWithoutReturn
-                    .getCharPositionInLine());
+            throw new ViolatedConstraintException(ERROR_MSG, funcWithoutReturn);
         }
     }
 
