@@ -1,11 +1,9 @@
 package myun.compiler;
 
-import myun.MyunException;
-
 /**
  * Thrown when the LLVM compilation process was unsuccessful.
  */
-class UnsuccessfulCompilationException extends MyunException {
+class UnsuccessfulCompilationException extends RuntimeException {
     UnsuccessfulCompilationException(String msg) {
         super(msg);
     }

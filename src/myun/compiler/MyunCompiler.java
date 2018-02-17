@@ -3,15 +3,53 @@ package myun.compiler;
 import myun.AST.*;
 import myun.scope.MyunCoreScope;
 import myun.scope.ScopeInitializer;
-import myun.type.TypeInferrer;
+import myun.type.inference.TypeInferrer;
 
 import java.io.*;
+import java.util.stream.Collectors;
 
 /**
  * Compiles a myun source file to LLVM code.
  * @noinspection UseOfSystemOutOrSystemErr
  */
-public class MyunCompiler {
+final class MyunCompiler {
+    private final String llvmCompiler;
+    private final String assemblyCompiler;
+    private final int optimizationLevel;
+    private static final String DEFAULT_LLVM_COMPILER = "llc";
+    private static final String DEFAULT_ASSEMBLY_COMPILER = "gcc";
+    private static final int DEFAULT_OPT_LEVEL = 0;
+
+    private MyunCompiler(String llvmCompiler, String assemblyCompiler, int optimizationLevel) {
+        this.llvmCompiler = llvmCompiler;
+        this.assemblyCompiler = assemblyCompiler;
+        this.optimizationLevel = optimizationLevel;
+    }
+
+    public static MyunCompiler getDefaultMyunCompiler() {
+        return new MyunCompiler(DEFAULT_LLVM_COMPILER, DEFAULT_ASSEMBLY_COMPILER, DEFAULT_OPT_LEVEL);
+    }
+
+    public static void main(String... args) throws IOException, InterruptedException {
+        if (args.length == 0) {
+            System.out.println("Missing input file.");
+            System.exit(1);
+        }
+        String inputFile = args[0];
+
+        MyunCompiler compiler;
+        if (args.length == 4) {
+            String llvmCompiler = args[1];
+            String assemblyCompiler = args[2];
+            int optimizationLevel = Integer.parseInt(args[3]);
+            compiler = new MyunCompiler(llvmCompiler, assemblyCompiler, optimizationLevel);
+        }
+        else {
+            compiler = getDefaultMyunCompiler();
+        }
+
+        compiler.compileFromFile(inputFile);
+    }
 
     /**
      * Compiles myun code from a file and writes the resulting llvm ir code to an output file.
@@ -19,18 +57,19 @@ public class MyunCompiler {
      * @param inputFile the path to the input file
      * @throws IOException thrown when the file could not be loaded or written to
      */
-    public void compileFromFile(String inputFile) throws IOException {
-        // make sure the input file is myun source code
-        if (!inputFile.endsWith(".myun")) {
-            throw new RuntimeException("Input file is not a myun source file.");
-        }
-
+    private void compileFromFile(String inputFile) throws IOException, InterruptedException {
         // generate the ast
         ASTGenerator astGen = new ASTGenerator();
         ASTCompileUnit program = astGen.parseFile(inputFile);
+        String fileName;
+        if (inputFile.endsWith(".myun")) {
+            fileName = inputFile.substring(0, inputFile.length() - 1 - "myun".length());
+        } else {
+            fileName = inputFile;
+        }
 
         // init the scopes
-        new ScopeInitializer(program, MyunCoreScope.getInstance());
+        ScopeInitializer.initScopes(program, MyunCoreScope.getInstance());
 
         // infer the types
         TypeInferrer typeInferrer = new TypeInferrer();
@@ -47,10 +86,30 @@ public class MyunCompiler {
         System.out.println(llvmCode);
 
         // write it to the output file
-        String outputFile = inputFile.substring(0, inputFile.length()-1-"myun".length())+".ll";
+        String outputFile = fileName+".ll";
         Writer writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(outputFile), "utf-8"));
         writer.write(llvmCode);
         writer.close();
+
+        // compile the llvm code
+        System.out.println("### LLVM compiled with: ");
+        System.out.println(llvmCompiler + ", " + assemblyCompiler + ", -O" + optimizationLevel);
+        runCompileChain(fileName);
     }
 
+    void runCompileChain(String fileName) throws IOException, InterruptedException {
+        Runtime rt = Runtime.getRuntime();
+        String[] execCodes = {llvmCompiler+" -O"+optimizationLevel+ ' ' +fileName+".ll",
+                assemblyCompiler+" -c "+fileName+".s -o "+fileName+".o",
+                assemblyCompiler+ ' ' +fileName+".o -o "+fileName+".out"};
+        for (String execCode : execCodes) {
+            Process compileProcess = rt.exec(execCode);
+            int compileRet = compileProcess.waitFor();
+            if (compileRet != 0) {
+                String error = new BufferedReader(new InputStreamReader(compileProcess.getErrorStream()))
+                        .lines().collect(Collectors.joining("\n"));
+                throw new UnsuccessfulCompilationException(error);
+            }
+        }
+    }
 }

@@ -7,11 +7,10 @@ public class ASTLoopBreak extends ASTStatement {
     /**
      * Creates a new AST node.
      *
-     * @param lineNumber         The line in the source code where this node starts
-     * @param charPositionInLine The character position of this node on its line
+     * @param sourcePos the position of this node in the source code
      */
-    public ASTLoopBreak(int lineNumber, int charPositionInLine) {
-        super(lineNumber, charPositionInLine);
+    public ASTLoopBreak(SourcePosition sourcePos) {
+        super(sourcePos);
     }
 
     @Override

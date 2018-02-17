@@ -1,20 +1,20 @@
 package myun;
 
-import myun.AST.ASTNode;
+import myun.AST.SourcePosition;
 
 /**
  * Thrown when a feature is not implemented yet.
  */
 public class NotImplementedException extends MyunException {
-    private final ASTNode reason;
+    private final String featureName;
 
-    public NotImplementedException(String msg, ASTNode reason) {
-        super(msg);
-        this.reason = reason;
+    public NotImplementedException(String featureName, SourcePosition sourcePosition) {
+        super(sourcePosition);
+        this.featureName = featureName;
     }
 
     @Override
     public String getMessage() {
-        return super.getMessage() + " on line " + reason.getLine() + " at " + reason.getCharPositionInLine();
+        return "Not implemented feature " + featureName + " used on " + sourcePosition;
     }
 }

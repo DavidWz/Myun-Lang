@@ -12,16 +12,15 @@ public class ASTForLoop extends ASTStatement {
     /**
      * Creates a new AST for loop.
      *
-     * @param lineNumber         The line in the source code where this node starts
-     * @param charPositionInLine The character position of this node on its line
+     * @param sourcePos the position of this node in the source code
      * @param variable           The iteration variable
      * @param from               The starting value
      * @param to                 The end value
      * @param block              The execution block
      */
-    public ASTForLoop(int lineNumber, int charPositionInLine, ASTVariable variable, ASTExpression from, ASTExpression
-            to, ASTBlock block) {
-        super(lineNumber, charPositionInLine);
+    public ASTForLoop(SourcePosition sourcePos,
+                      ASTVariable variable, ASTExpression from, ASTExpression to, ASTBlock block) {
+        super(sourcePos);
         this.variable = variable;
         this.from = from;
         this.to = to;

@@ -9,12 +9,11 @@ public class ASTConstant<CT> extends ASTExpression {
     /**
      * Creates a new AST constant.
      *
-     * @param lineNumber         The line in the source code where this node starts
-     * @param charPositionInLine The character position of this node on its line
+     * @param sourcePos the position of this node in the source code
      * @param value              The value of this constant.
      */
-    public ASTConstant(int lineNumber, int charPositionInLine, CT value) {
-        super(lineNumber, charPositionInLine);
+    public ASTConstant(SourcePosition sourcePos, CT value) {
+        super(sourcePos);
         this.value = value;
     }
 

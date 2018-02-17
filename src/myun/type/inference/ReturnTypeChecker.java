@@ -1,27 +1,20 @@
-package myun.type;
+package myun.type.inference;
 
 import myun.AST.*;
+import myun.type.MyunType;
 
 /**
  * Checks if all expressions in function return statements are of the same type as the declared function return type.
  */
-class ReturnTypeChecker implements ASTVisitor<Void> {
-    private final ASTType targetType;
+final class ReturnTypeChecker implements ASTVisitor<Void> {
+    private final MyunType targetType;
 
     ReturnTypeChecker(ASTFuncDef node) {
-        super();
-        targetType = node.getReturnType().orElseThrow(() -> new RuntimeException("Type inference not supported " +
-                "yet!"));
-        node.accept(this);
+        targetType = node.getReturnType();
     }
 
     @Override
     public Void visit(ASTAssignment node) {
-        return null;
-    }
-
-    @Override
-    public Void visit(ASTBasicType node) {
         return null;
     }
 
@@ -44,7 +37,7 @@ class ReturnTypeChecker implements ASTVisitor<Void> {
     }
 
     @Override
-    public Void visit(ASTConstant node) {
+    public <CT> Void visit(ASTConstant<CT> node) {
         return null;
     }
 
@@ -70,15 +63,10 @@ class ReturnTypeChecker implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTFuncReturn node) {
-        ASTType returnType = node.getExpr().getType().orElseThrow(() -> new CouldNotInferTypeException(node.getExpr()));
+        MyunType returnType = node.getExpr().getType();
         if (!returnType.equals(targetType)) {
-            throw new TypeMismatchException(returnType, targetType, node.getExpr());
+            throw new TypeMismatchException(returnType, targetType, node.getExpr().getSourcePosition());
         }
-        return null;
-    }
-
-    @Override
-    public Void visit(ASTFuncType node) {
         return null;
     }
 

@@ -1,8 +1,10 @@
 package myun.AST;
 
-import java.util.ArrayList;
+import myun.type.FuncType;
+import myun.type.MyunType;
+
 import java.util.List;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Represents a function definition.
@@ -10,22 +12,22 @@ import java.util.Optional;
 public class ASTFuncDef extends ASTNode {
     private final String name;
     private final List<ASTVariable> parameters;
-    private final ASTType returnType;
+    private final MyunType returnType;
     private final ASTBlock block;
 
     /**
      * Creates a new AST function definition.
      *
-     * @param lineNumber         The line in the source code where this node starts
-     * @param charPositionInLine The character position of this node on its line
+     * @param sourcePos the position of this node in the source code
      * @param name               The name of the defined function
      * @param params             The parameters of the function
      * @param returnType         The return type of this function
      * @param block              The function body
      */
-    public ASTFuncDef(int lineNumber, int charPositionInLine, String name, List<ASTVariable> params, ASTType
-            returnType, ASTBlock block) {
-        super(lineNumber, charPositionInLine);
+    public ASTFuncDef(SourcePosition sourcePos,
+                      String name, List<ASTVariable> params, MyunType returnType,
+                      ASTBlock block) {
+        super(sourcePos);
         this.name = name;
         parameters = params;
         this.returnType = returnType;
@@ -40,8 +42,8 @@ public class ASTFuncDef extends ASTNode {
         return parameters;
     }
 
-    public Optional<ASTType> getReturnType() {
-        return Optional.ofNullable(returnType);
+    public MyunType getReturnType() {
+        return returnType;
     }
 
     public ASTBlock getBlock() {
@@ -54,24 +56,9 @@ public class ASTFuncDef extends ASTNode {
      *
      * @return the type of this function
      */
-    public Optional<ASTFuncType> getType() {
-        List<ASTType> paramTypes = new ArrayList<>();
-        for (ASTVariable param : parameters) {
-            Optional<ASTType> pT = param.getType();
-            if (pT.isPresent()) {
-                paramTypes.add(pT.get());
-            }
-            else {
-                return Optional.empty();
-            }
-        }
-
-        if (null == returnType) {
-            return Optional.empty();
-        }
-        else {
-            return Optional.of(new ASTFuncType(getLine(), getCharPositionInLine(), paramTypes, returnType));
-        }
+    public FuncType getType() {
+        List<MyunType> paramTypes = parameters.stream().map(ASTExpression::getType).collect(Collectors.toList());
+        return new FuncType(paramTypes, returnType);
     }
 
     @Override

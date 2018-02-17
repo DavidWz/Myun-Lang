@@ -1,6 +1,6 @@
 package myun.scope;
 
-import myun.AST.ASTNode;
+import myun.AST.SourcePosition;
 import myun.MyunException;
 
 /**
@@ -8,21 +8,16 @@ import myun.MyunException;
  */
 public class IllegalRedefineException extends MyunException {
     private final String name;
-    private final ASTNode originalNode;
-    private final ASTNode redefinedNode;
+    private final SourcePosition originalPos;
 
-    public IllegalRedefineException(String name, ASTNode originalNode, ASTNode redefinedNode) {
-        super();
+    public IllegalRedefineException(String name, SourcePosition originalPos, SourcePosition redefinedPos) {
+        super(redefinedPos);
         this.name = name;
-        this.originalNode = originalNode;
-        this.redefinedNode = redefinedNode;
+        this.originalPos = originalPos;
     }
 
     @Override
     public String getMessage() {
-        return "Error: Illegal redefinition of " + name +
-                " on line " + redefinedNode.getLine() + " at " + redefinedNode.getCharPositionInLine() +
-                " first defined on line " + originalNode.getLine() +
-                " at " + originalNode.getCharPositionInLine();
+        return "Error: Illegal redefinition of " + name + " on " + sourcePosition + " first defined on " + originalPos;
     }
 }

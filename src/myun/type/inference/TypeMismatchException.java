@@ -1,23 +1,22 @@
-package myun.type;
+package myun.type.inference;
 
-import myun.AST.ASTNode;
-import myun.AST.ASTType;
 import myun.AST.MyunPrettyPrinter;
+import myun.AST.SourcePosition;
 import myun.MyunException;
+import myun.type.MyunType;
 
 /**
  * Exception thrown when two types mismatch.
  */
 class TypeMismatchException extends MyunException {
-    private final ASTType actual;
-    private final ASTType expected;
-    private final ASTNode reason;
+    private final MyunType actual;
+    private final MyunType expected;
     private final MyunPrettyPrinter prettyPrinter;
 
-    TypeMismatchException(ASTType actual, ASTType expected, ASTNode reason) {
+    TypeMismatchException(MyunType actual, MyunType expected, SourcePosition sourcePosition) {
+        super(sourcePosition);
         this.actual = actual;
         this.expected = expected;
-        this.reason = reason;
         prettyPrinter = new MyunPrettyPrinter();
     }
 
@@ -26,6 +25,6 @@ class TypeMismatchException extends MyunException {
         return "Type Error: Types Mismatch.\n" +
                 "Expected " + expected.accept(prettyPrinter) +
                 " but got " + actual.accept(prettyPrinter) +
-                " on line " + reason.getLine() + " at " + reason.getCharPositionInLine();
+                " on " + sourcePosition;
     }
 }

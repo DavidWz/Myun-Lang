@@ -12,11 +12,11 @@ class ExecutionResult {
         this.errors = errors;
     }
 
-    public int getExitStatus() {
+    int getExitStatus() {
         return exitStatus;
     }
 
-    public String getErrors() {
+    String getErrors() {
         return errors;
     }
 }

@@ -20,6 +20,9 @@ import myun.AST.MyunParser.StatementContext;
 import myun.AST.MyunParser.VariableContext;
 import myun.AST.MyunParser.WhileLoopContext;
 import myun.AST.constraints.ConstraintChecker;
+import myun.type.BasicType;
+import myun.type.FuncType;
+import myun.type.MyunType;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -37,7 +40,6 @@ public class ASTGenerator implements ANTLRErrorListener {
     private final ConstraintChecker constraintChecker;
 
     public ASTGenerator() {
-        super();
         constraintChecker = new ConstraintChecker();
     }
 
@@ -86,12 +88,21 @@ public class ASTGenerator implements ANTLRErrorListener {
         return compileUnit;
     }
 
+    /**
+     * Encapsules the line and position of the given token in an SourcePosition object.
+     * @param token the token
+     * @return the SourcePosition object
+     */
+    private static SourcePosition getSourcePos(Token token) {
+        return new SourcePosition(token.getLine(), token.getCharPositionInLine());
+    }
+
     @Override
     public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {
-        throw new ParserException("Parse Error: Expected " +
+        throw new ParserException("Expected " +
                 e.getExpectedTokens().toString(MyunParser.VOCABULARY) +
-                " but found \"" + e.getOffendingToken().getText() + "\" on line " +
-                e.getOffendingToken().getLine() + " at " + e.getOffendingToken().getCharPositionInLine());
+                " but found \"" + e.getOffendingToken().getText() + '"',
+                getSourcePos(e.getOffendingToken()));
     }
 
     @Override
@@ -115,7 +126,7 @@ public class ASTGenerator implements ANTLRErrorListener {
                     map(funcDef -> funcDef.accept(new FuncDefVisitor())).
                     collect(Collectors.toList());
             ASTScript script = ctx.script().accept(new ScriptVisitor());
-            return new ASTCompileUnit(ctx.start.getLine(), ctx.start.getCharPositionInLine(), funcDefs, script);
+            return new ASTCompileUnit(getSourcePos(ctx.start), funcDefs, script);
         }
     }
 
@@ -123,7 +134,7 @@ public class ASTGenerator implements ANTLRErrorListener {
         @Override
         public ASTScript visitScript(ScriptContext ctx) {
             ASTBlock block = ctx.block().accept(new BlockVisitor());
-            return new ASTScript(ctx.start.getLine(), ctx.start.getCharPositionInLine(), ctx.name.getText(), block);
+            return new ASTScript(getSourcePos(ctx.start), ctx.name.getText(), block);
         }
     }
 
@@ -134,38 +145,34 @@ public class ASTGenerator implements ANTLRErrorListener {
                     map(stmt -> stmt.accept(new StatementVisitor())).
                     collect(Collectors.toList());
             ASTFuncReturn funcReturn = null;
-            if (null != ctx.funcReturn()) {
-                funcReturn = new ASTFuncReturn(ctx.funcReturn().start.getLine(),
-                        ctx.funcReturn().start.getCharPositionInLine(),
+            if (ctx.funcReturn() != null) {
+                funcReturn = new ASTFuncReturn(getSourcePos(ctx.funcReturn().start),
                         ctx.funcReturn().expr().accept(new ExprVisitor()));
             }
             ASTLoopBreak loopBreak = null;
-            if (null != ctx.loopBreak()) {
-                loopBreak = new ASTLoopBreak(ctx.loopBreak().start.getLine(), ctx.loopBreak().start
-                        .getCharPositionInLine());
+            if (ctx.loopBreak() != null) {
+                loopBreak = new ASTLoopBreak(getSourcePos(ctx.loopBreak().start));
             }
-            return new ASTBlock(ctx.start.getLine(), ctx.start.getCharPositionInLine(), statements, funcReturn,
-                    loopBreak);
+            return new ASTBlock(getSourcePos(ctx.start), statements, funcReturn, loopBreak);
         }
     }
 
     private static class StatementVisitor extends MyunBaseVisitor<ASTStatement> {
         @Override
         public ASTStatement visitStatement(StatementContext ctx) {
-            if (null != ctx.declaration()) {
+            if (ctx.declaration() != null) {
                 return ctx.declaration().accept(new DeclarationVisitor());
             }
-            if (null != ctx.assignment()) {
+            if (ctx.assignment() != null) {
                 return ctx.assignment().accept(new AssignmentVisitor());
             }
-            if (null != ctx.branch()) {
+            if (ctx.branch() != null) {
                 return ctx.branch().accept(new BranchVisitor());
             }
-            if (null != ctx.loop()) {
+            if (ctx.loop() != null) {
                 return ctx.loop().accept(new LoopVisitor());
             }
-            throw new RuntimeException("Unknown statement on line " +
-                    ctx.start.getLine() + " at " + ctx.start.getCharPositionInLine() + ": " + ctx.getText());
+            throw new ParserException("Unknown statement " + ctx.getText(), getSourcePos(ctx.start));
         }
     }
 
@@ -176,20 +183,20 @@ public class ASTGenerator implements ANTLRErrorListener {
 
             List<ASTVariable> params = ctx.funcParam().stream().map(param -> {
                 ASTVariable var = param.variable().accept(new VariableVisitor());
-                if (null != param.type()) {
+                if (param.type() != null) {
                     var.setType(param.type().accept(new TypeVisitor()));
                 }
                 return var;
             }).collect(Collectors.toList());
 
-            ASTType returnType = null;
-            if (null != ctx.returnType) {
+            MyunType returnType = null;
+            if (ctx.returnType != null) {
                 returnType = ctx.returnType.accept(new TypeVisitor());
             }
 
             ASTBlock block = ctx.block().accept(new BlockVisitor());
 
-            return new ASTFuncDef(ctx.start.getLine(), ctx.start.getCharPositionInLine(), name, params, returnType,
+            return new ASTFuncDef(getSourcePos(ctx.start), name, params, returnType,
                     block);
         }
     }
@@ -199,7 +206,7 @@ public class ASTGenerator implements ANTLRErrorListener {
         public ASTDeclaration visitDeclaration(DeclarationContext ctx) {
             ASTVariable var = ctx.variable().accept(new VariableVisitor());
             ASTExpression expr = ctx.expr().accept(new ExprVisitor());
-            return new ASTDeclaration(ctx.start.getLine(), ctx.start.getCharPositionInLine(), var, expr);
+            return new ASTDeclaration(getSourcePos(ctx.start), var, expr);
         }
     }
 
@@ -208,7 +215,7 @@ public class ASTGenerator implements ANTLRErrorListener {
         public ASTAssignment visitAssignment(AssignmentContext ctx) {
             ASTVariable var = ctx.variable().accept(new VariableVisitor());
             ASTExpression expr = ctx.expr().accept(new ExprVisitor());
-            return new ASTAssignment(ctx.start.getLine(), ctx.start.getCharPositionInLine(), var, expr);
+            return new ASTAssignment(getSourcePos(ctx.start), var, expr);
         }
     }
 
@@ -222,7 +229,7 @@ public class ASTGenerator implements ANTLRErrorListener {
                     map(block -> block.accept(new BlockVisitor())).
                     collect(Collectors.toList());
 
-            return new ASTBranch(ctx.start.getLine(), ctx.start.getCharPositionInLine(), conditions, blocks);
+            return new ASTBranch(getSourcePos(ctx.start), conditions, blocks);
         }
     }
 
@@ -231,7 +238,7 @@ public class ASTGenerator implements ANTLRErrorListener {
         public ASTWhileLoop visitWhileLoop(WhileLoopContext ctx) {
             ASTExpression condition = ctx.expr().accept(new ExprVisitor());
             ASTBlock block = ctx.block().accept(new BlockVisitor());
-            return new ASTWhileLoop(ctx.start.getLine(), ctx.start.getCharPositionInLine(), condition, block);
+            return new ASTWhileLoop(getSourcePos(ctx.start), condition, block);
         }
 
         @Override
@@ -240,7 +247,7 @@ public class ASTGenerator implements ANTLRErrorListener {
             ASTExpression from = ctx.from.accept(new ExprVisitor());
             ASTExpression to = ctx.to.accept(new ExprVisitor());
             ASTBlock block = ctx.block().accept(new BlockVisitor());
-            return new ASTForLoop(ctx.start.getLine(), ctx.start.getCharPositionInLine(), variable, from, to, block);
+            return new ASTForLoop(getSourcePos(ctx.start), variable, from, to, block);
         }
     }
 
@@ -257,27 +264,29 @@ public class ASTGenerator implements ANTLRErrorListener {
 
         @Override
         public ASTExpression visitBasic(BasicContext ctx) {
-            if (null != ctx.bool()) {
-                return new ASTConstant<>(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+            if (ctx.bool() != null) {
+                return new ASTConstant<>(getSourcePos(ctx.start),
                         "true".equals(ctx.bool().getText()));
             }
-            if (null != ctx.integer()) {
-                return new ASTConstant<>(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+            if (ctx.integer() != null) {
+                return new ASTConstant<>(getSourcePos(ctx.start),
                         Integer.parseInt(ctx.integer().getText()));
             }
-            if (null != ctx.floating()) {
-                return new ASTConstant<>(ctx.start.getLine(), ctx.start.getCharPositionInLine(),
+            if (ctx.floating() != null) {
+                return new ASTConstant<>(getSourcePos(ctx.start),
                         Float.parseFloat(ctx.floating().getText()));
             }
-            if (null != ctx.variable()) {
+            if (ctx.variable() != null) {
                 return ctx.variable().accept(new VariableVisitor());
             }
-            throw new RuntimeException("Unknown basic expression type.");
+            throw new ParserException("Unknown basic expression " + ctx.getText(), getSourcePos(ctx.start));
         }
 
+        /** @noinspection OverlyComplexMethod, OverlyLongMethod */
         @Override
         public ASTExpression visitOperatorExpr(OperatorExprContext ctx) {
             ASTExpression left = ctx.left.accept(this);
+            SourcePosition sourcePos = getSourcePos(ctx.start);
             String op;
             switch (ctx.op.getType()) {
                 case MyunLexer.OP_AND:
@@ -320,14 +329,15 @@ public class ASTGenerator implements ANTLRErrorListener {
                     op = "mod";
                     break;
                 default:
-                    throw new RuntimeException("Unknown operator expression.");
+                    throw new ParserException("Unknown operator " + ctx.op.getText(), sourcePos);
             }
             ASTExpression right = ctx.right.accept(this);
-            return new ASTFuncCall(ctx.start.getLine(), ctx.start.getCharPositionInLine(), op, left, right);
+            return new ASTFuncCall(sourcePos, op, left, right);
         }
 
         @Override
         public ASTExpression visitPrefixExpr(PrefixExprContext ctx) {
+            SourcePosition sourcePos = getSourcePos(ctx.start);
             String op;
             switch (ctx.prefix.getType()) {
                 case MyunLexer.OP_NOT:
@@ -337,10 +347,10 @@ public class ASTGenerator implements ANTLRErrorListener {
                     op = "negate";
                     break;
                 default:
-                    throw new RuntimeException("Unknwon prefix expression.");
+                    throw new ParserException("Unknwon prefix expression " + ctx.prefix.getText(), sourcePos);
             }
             ASTExpression expr = ctx.expr().accept(new ExprVisitor());
-            return new ASTFuncCall(ctx.start.getLine(), ctx.start.getCharPositionInLine(), op, expr);
+            return new ASTFuncCall(sourcePos, op, expr);
         }
     }
 
@@ -350,7 +360,7 @@ public class ASTGenerator implements ANTLRErrorListener {
             List<ASTExpression> args = ctx.expr().stream().
                     map(arg -> arg.accept(new ExprVisitor())).
                     collect(Collectors.toList());
-            return new ASTFuncCall(ctx.start.getLine(), ctx.start.getCharPositionInLine(), ctx.func.getText(), args);
+            return new ASTFuncCall(getSourcePos(ctx.start), ctx.func.getText(), args);
         }
     }
 
@@ -358,28 +368,28 @@ public class ASTGenerator implements ANTLRErrorListener {
         @Override
         public ASTVariable visitVariable(VariableContext ctx) {
             String name = ctx.name.getText();
-            return new ASTVariable(ctx.start.getLine(), ctx.start.getCharPositionInLine(), name);
+            return new ASTVariable(getSourcePos(ctx.start), name);
         }
     }
 
-    private static class TypeVisitor extends MyunBaseVisitor<ASTType> {
+    private static class TypeVisitor extends MyunBaseVisitor<MyunType> {
         @Override
-        public ASTType visitParenthesisType(ParenthesisTypeContext ctx) {
+        public MyunType visitParenthesisType(ParenthesisTypeContext ctx) {
             return ctx.type().accept(this);
         }
 
         @Override
-        public ASTType visitBasicType(BasicTypeContext ctx) {
+        public MyunType visitBasicType(BasicTypeContext ctx) {
             String name = ctx.name.getText();
-            return new ASTBasicType(ctx.start.getLine(), ctx.start.getCharPositionInLine(), name);
+            return new BasicType(name);
         }
 
         @Override
-        public ASTType visitFuncType(FuncTypeContext ctx) {
-            List<ASTType> types = ctx.type().stream().map(t -> t.accept(this)).collect(Collectors.toList());
-            ASTType returnType = types.get(types.size() - 1);
+        public MyunType visitFuncType(FuncTypeContext ctx) {
+            List<MyunType> types = ctx.type().stream().map(t -> t.accept(this)).collect(Collectors.toList());
+            MyunType returnType = types.get(types.size() - 1);
             types.remove(types.size() - 1);
-            return new ASTFuncType(ctx.start.getLine(), ctx.start.getCharPositionInLine(), types, returnType);
+            return new FuncType(types, returnType);
         }
     }
 }

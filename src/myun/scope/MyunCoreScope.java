@@ -1,9 +1,10 @@
 package myun.scope;
 
-import myun.AST.ASTBasicType;
-import myun.AST.ASTFuncType;
-import myun.AST.ASTType;
-import myun.AST.FuncHeader;
+import myun.AST.SourcePosition;
+import myun.type.BasicType;
+import myun.type.FuncType;
+import myun.type.MyunType;
+import myun.type.FuncHeader;
 import myun.type.PrimitiveTypes;
 
 import java.util.*;
@@ -27,31 +28,27 @@ public final class MyunCoreScope extends Scope {
         return instance;
     }
 
-    private Map<FuncHeader, String> getLlvmInstructions() {
-        return llvmInstructions;
-    }
-
-    private ASTFuncType binaryFunction(String param1, String param2, String result) {
-        ASTBasicType type1 = new ASTBasicType(-1, -1, param1);
-        ASTBasicType type2 = new ASTBasicType(-1, -1, param2);
-        ASTBasicType resultType = new ASTBasicType(-1, -1, result);
-        List<ASTType> params = new ArrayList<>();
+    private static FuncType binaryFunction(String param1, String param2, String result) {
+        MyunType type1 = new BasicType(param1);
+        MyunType type2 = new BasicType(param2);
+        MyunType resultType = new BasicType(result);
+        List<MyunType> params = new ArrayList<>();
         params.add(type1);
         params.add(type2);
-        return new ASTFuncType(-1, -1, params, resultType);
+        return new FuncType(params, resultType);
     }
 
-    private ASTFuncType unaryFunction(String param, String result) {
-        ASTBasicType type = new ASTBasicType(-1, -1, param);
-        ASTBasicType resultType = new ASTBasicType(-1, -1, result);
-        List<ASTType> params = new ArrayList<>();
+    private static FuncType unaryFunction(String param, String result) {
+        MyunType type = new BasicType(param);
+        MyunType resultType = new BasicType(result);
+        List<MyunType> params = new ArrayList<>();
         params.add(type);
-        return new ASTFuncType(-1, -1, params, resultType);
+        return new FuncType(params, resultType);
     }
 
-    private void declareAndSetLLVM(String name, ASTFuncType type, String llvm) {
+    private void declareAndSetLLVM(String name, FuncType type, String llvm) {
         FuncHeader funcHeader = new FuncHeader(name, type.getParameterTypes());
-        declareFunction(funcHeader, type);
+        declareFunction(funcHeader, type, new SourcePosition());
         llvmInstructions.put(funcHeader, llvm);
     }
 
@@ -157,10 +154,10 @@ public final class MyunCoreScope extends Scope {
      * @param argTypes the types of the arguments
      * @return the native LLVM instruction for that call or empty if none found
      */
-    public static Optional<String> getLLVMOperation(String name, List<ASTType> argTypes) {
+    public static Optional<String> getLLVMOperation(String name, List<MyunType> argTypes) {
         FuncHeader header = new FuncHeader(name, argTypes);
-        if (instance.getLlvmInstructions().containsKey(header)) {
-            return Optional.of(instance.getLlvmInstructions().get(header));
+        if (instance.llvmInstructions.containsKey(header)) {
+            return Optional.of(instance.llvmInstructions.get(header));
         } else {
             return Optional.empty();
         }

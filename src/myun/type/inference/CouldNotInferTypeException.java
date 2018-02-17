@@ -1,4 +1,4 @@
-package myun.type;
+package myun.type.inference;
 
 import myun.AST.ASTExpression;
 import myun.AST.MyunPrettyPrinter;
@@ -12,7 +12,7 @@ class CouldNotInferTypeException extends MyunException {
     private final MyunPrettyPrinter prettyPrinter;
 
     CouldNotInferTypeException(ASTExpression expr) {
-        super();
+        super(expr.getSourcePosition());
         expression = expr;
         prettyPrinter = new MyunPrettyPrinter();
     }
@@ -21,7 +21,6 @@ class CouldNotInferTypeException extends MyunException {
     public String getMessage() {
         return "Type Error: Could not infer type of expression \n" +
                 expression.accept(prettyPrinter) +
-                " on line " + expression.getLine() +
-                " at " + expression.getCharPositionInLine();
+                " on " + sourcePosition;
     }
 }

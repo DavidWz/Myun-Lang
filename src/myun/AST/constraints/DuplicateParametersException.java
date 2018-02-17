@@ -7,13 +7,13 @@ class DuplicateParametersException extends MyunException {
     private final ASTVariable reason;
 
     DuplicateParametersException(ASTVariable reason) {
-        super();
+        super(reason.getSourcePosition());
         this.reason = reason;
     }
 
     @Override
     public String getMessage() {
         return "Duplicate parameter name \"" + reason.getName() + "\" found in function definition " +
-                "on line " + reason.getLine() + " at " + reason.getCharPositionInLine();
+                "on " + sourcePosition;
     }
 }

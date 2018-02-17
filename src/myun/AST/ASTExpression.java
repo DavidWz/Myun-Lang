@@ -1,28 +1,29 @@
 package myun.AST;
 
-import java.util.Optional;
+import myun.type.MyunType;
+import myun.type.UnknownType;
 
 /**
  * Represents a general expression.
  */
 public abstract class ASTExpression extends ASTNode {
-    private ASTType type;
+    private MyunType type;
 
     /**
      * Creates a new AST expression (without any type information)
      *
-     * @param lineNumber         The line in the source code where this node starts
-     * @param charPositionInLine The character position of this node on its line
+     * @param sourcePosition the position of this node in the source code
      */
-    ASTExpression(int lineNumber, int charPositionInLine) {
-        super(lineNumber, charPositionInLine);
+    ASTExpression(SourcePosition sourcePosition) {
+        super(sourcePosition);
+        type = new UnknownType();
     }
 
-    public Optional<ASTType> getType() {
-        return Optional.ofNullable(type);
+    public MyunType getType() {
+        return type;
     }
 
-    public void setType(ASTType type) {
+    public void setType(MyunType type) {
         this.type = type;
     }
 }

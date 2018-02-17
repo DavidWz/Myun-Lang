@@ -14,15 +14,14 @@ public class ASTBlock extends ASTNode {
     /**
      * Creates a new AST block.
      *
-     * @param lineNumber         The line in the source code where this node starts
-     * @param charPositionInLine The character position of this node on its line
+     * @param sourcePos the position of this node in the source code
      * @param statements         The statements in this block
      * @param funcReturn         A possible function return statement (can be null)
      * @param loopBreak          A possible loop break (can be null)
      */
-    public ASTBlock(int lineNumber, int charPositionInLine, List<ASTStatement> statements, ASTFuncReturn funcReturn,
+    public ASTBlock(SourcePosition sourcePos, List<ASTStatement> statements, ASTFuncReturn funcReturn,
                     ASTLoopBreak loopBreak) {
-        super(lineNumber, charPositionInLine);
+        super(sourcePos);
         this.statements = statements;
         this.funcReturn = funcReturn;
         this.loopBreak = loopBreak;

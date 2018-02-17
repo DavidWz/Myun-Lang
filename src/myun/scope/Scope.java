@@ -1,6 +1,9 @@
 package myun.scope;
 
 import myun.AST.*;
+import myun.type.FuncHeader;
+import myun.type.FuncType;
+import myun.type.MyunType;
 
 import java.util.*;
 
@@ -18,7 +21,6 @@ public class Scope {
      * @param parent a parent or null if this is a root scope
      */
     public Scope(Scope parent) {
-        super();
         this.parent = parent;
         declaredVariables = new HashMap<>();
         declaredFunctions = new HashMap<>();
@@ -31,7 +33,7 @@ public class Scope {
      * @return true iff the variable has been declared
      */
     public boolean isDeclared(ASTVariable var) {
-        return declaredVariables.containsKey(var) || ((null != parent) && parent.isDeclared(var));
+        return declaredVariables.containsKey(var) || ((parent != null) && parent.isDeclared(var));
     }
 
     /**
@@ -42,12 +44,15 @@ public class Scope {
      * @param varInfo the variable information
      * @throws IllegalRedefineException thrown when the variable has been declared in this scope already
      */
-    public void declareVariable(ASTVariable variable, VariableInfo varInfo) throws IllegalRedefineException {
+    public void declareVariable(ASTVariable variable, VariableInfo varInfo) {
         // check for illegal redefinition of the variable
         if (isDeclared(variable)) {
             throw new IllegalRedefineException(variable.getName(),
-                    getVarInfo(variable).getDeclaration(),
-                    varInfo.getDeclaration());
+                    getVarInfo(variable).getDeclaration().getSourcePosition(),
+                    varInfo.getDeclaration().getSourcePosition());
+        }
+        else if (!varInfo.getType().isFullyKnown()) {
+            throw new TypeNotInferredException(variable.getSourcePosition());
         }
         else {
             // add variable to declarations and update type of lhs
@@ -66,9 +71,12 @@ public class Scope {
      * @throws IllegalRedefineException thrown when the variable has been declared in this scope already
      * @throws TypeNotInferredException thrown when the type of the expression has not been inferred yet
      */
-    public void declareVariable(ASTDeclaration declaration) throws IllegalRedefineException, TypeNotInferredException {
-        ASTType type = declaration.getExpr().getType().orElseThrow(() ->
-                new TypeNotInferredException(declaration.getExpr()));
+    public void declareVariable(ASTDeclaration declaration) {
+        MyunType type = declaration.getExpr().getType();
+        if (!type.isFullyKnown()) {
+            throw new TypeNotInferredException(declaration.getExpr().getSourcePosition());
+        }
+
         // user made declarations are always assignable
         VariableInfo varInfo = new VariableInfo(type, true, declaration);
         declareVariable(declaration.getVariable(), varInfo);
@@ -82,12 +90,12 @@ public class Scope {
      * @return the variable info
      * @throws UndeclaredVariableUsedException thrown when var is not declared in this scope
      */
-    public VariableInfo getVarInfo(ASTVariable var) throws UndeclaredVariableUsedException {
+    public VariableInfo getVarInfo(ASTVariable var) {
         // search for the variable info in this scope
         if (declaredVariables.containsKey(var)) {
             return declaredVariables.get(var);
         }
-        else if (null != parent) {
+        else if (parent != null) {
             // search for it in the parent scope
             return parent.getVarInfo(var);
         } else {
@@ -102,7 +110,7 @@ public class Scope {
      * @return true iff it already has been declared
      */
     public boolean isDeclared(FuncHeader funcHeader) {
-        return declaredFunctions.containsKey(funcHeader) || ((null != parent) && parent.isDeclared
+        return declaredFunctions.containsKey(funcHeader) || ((parent != null) && parent.isDeclared
                 (funcHeader));
     }
 
@@ -116,16 +124,17 @@ public class Scope {
      * @param funcDef the function definition
      * @throws IllegalRedefineException thrown when the function has already been declared
      */
-    public void declareFunction(FuncHeader funcHeader, ASTFuncDef funcDef) throws IllegalRedefineException {
+    public void declareFunction(FuncHeader funcHeader, ASTFuncDef funcDef) {
         if (isDeclared(funcHeader)) {
             throw new IllegalRedefineException(funcHeader.getName(),
-                    getFunctionInfo(funcDef, funcHeader).getFuncDef(),
-                    funcDef);
+                    getFunctionInfo(funcHeader, funcDef.getSourcePosition()).getFuncDef().getSourcePosition(),
+                    funcDef.getSourcePosition());
+        }
+        else if (!funcDef.getType().isFullyKnown()) {
+            throw new TypeNotInferredException(funcDef.getSourcePosition());
         }
         else {
-            declaredFunctions.put(funcHeader, new FunctionInfo(funcDef.getType().
-                    orElseThrow(() -> new TypeNotInferredException(funcDef)),
-                    funcDef));
+            declaredFunctions.put(funcHeader, new FunctionInfo(funcDef.getType(), funcDef));
         }
     }
 
@@ -134,15 +143,15 @@ public class Scope {
      *
      * @param funcHeader the function header
      * @param funcType the function type
+     * @param sourcePos the position where this function was declared
      */
-    void declareFunction(FuncHeader funcHeader, ASTFuncType funcType) {
+    void declareFunction(FuncHeader funcHeader, FuncType funcType, SourcePosition sourcePos) {
         if (isDeclared(funcHeader)) {
             throw new IllegalRedefineException(funcHeader.getName(),
-                    getFunctionInfo(funcType, funcHeader).getFuncDef(),
-                    funcType);
+                    getFunctionInfo(funcHeader, sourcePos).getFuncDef().getSourcePosition(), sourcePos);
         }
         else {
-            declaredFunctions.put(funcHeader, new FunctionInfo(funcType, null));
+            declaredFunctions.put(funcHeader, new FunctionInfo(funcType, null)); // FIXME: null value for optional
         }
     }
 
@@ -150,20 +159,20 @@ public class Scope {
      * Returns the function information for the given function header.
      * The function must have been defined already.
      *
-     * @param source the source node of the function header
      * @param funcHeader the function header
      * @return the function information
+     * @param sourcePos the position where this function was declared
      * @throws UndeclaredFunctionCalledException thrown when the function has not been declared
      */
-    public FunctionInfo getFunctionInfo(ASTNode source, FuncHeader funcHeader) {
+    public FunctionInfo getFunctionInfo(FuncHeader funcHeader, SourcePosition sourcePos) {
         if (declaredFunctions.containsKey(funcHeader)) {
             return declaredFunctions.get(funcHeader);
         }
-        else if (null != parent) {
-            return parent.getFunctionInfo(source, funcHeader);
+        else if (parent != null) {
+            return parent.getFunctionInfo(funcHeader, sourcePos);
         }
         else {
-            throw new UndeclaredFunctionCalledException(source, funcHeader.getParameterTypes());
+            throw new UndeclaredFunctionCalledException(funcHeader, sourcePos);
         }
     }
 }

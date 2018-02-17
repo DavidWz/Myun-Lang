@@ -13,13 +13,12 @@ public class ASTFuncCall extends ASTExpression {
     /**
      * Creates a new AST function call
      *
-     * @param lineNumber         The line in the source code where this node starts
-     * @param charPositionInLine The character position of this node on its line
+     * @param sourcePos the position of this node in the source code
      * @param function           The called function
      * @param args               A list of arguments.
      */
-    public ASTFuncCall(int lineNumber, int charPositionInLine, String function, List<ASTExpression> args) {
-        super(lineNumber, charPositionInLine);
+    public ASTFuncCall(SourcePosition sourcePos, String function, List<ASTExpression> args) {
+        super(sourcePos);
         this.function = function;
         this.args = args;
     }
@@ -27,13 +26,12 @@ public class ASTFuncCall extends ASTExpression {
     /**
      * Creates a new AST function call
      *
-     * @param lineNumber         The line in the source code where this node starts
-     * @param charPositionInLine The character position of this node on its line
+     * @param sourcePos the position of this node in the source code
      * @param function           The called function
      * @param args               A list of arguments.
      */
-    public ASTFuncCall(int lineNumber, int charPositionInLine, String function, ASTExpression... args) {
-        super(lineNumber, charPositionInLine);
+    public ASTFuncCall(SourcePosition sourcePos, String function, ASTExpression... args) {
+        super(sourcePos);
         this.function = function;
         this.args = Arrays.asList(args);
     }

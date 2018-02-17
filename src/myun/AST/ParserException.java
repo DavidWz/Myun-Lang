@@ -5,8 +5,16 @@ import myun.MyunException;
 /**
  * Thrown when the parser finds an error.
  */
-class ParserException extends MyunException {
-    ParserException(String msg) {
-        super(msg);
+public class ParserException extends MyunException {
+    private final String cause;
+
+    public ParserException(String cause, SourcePosition sourcePosition) {
+        super(sourcePosition);
+        this.cause = cause;
+    }
+
+    @Override
+    public String getMessage() {
+        return "Parse Error: " + cause + " on " + sourcePosition;
     }
 }

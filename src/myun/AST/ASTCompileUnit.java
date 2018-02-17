@@ -12,13 +12,12 @@ public class ASTCompileUnit extends ASTNode {
     /**
      * Creates a new AST compile unit.
      *
-     * @param lineNumber         The line in the source code where this node starts
-     * @param charPositionInLine The character position of this node on its line
+     * @param sourcePos the position of this node in the source code
      * @param funcDefs           The function declarations
      * @param script             The script part of this compile unit.
      */
-    public ASTCompileUnit(int lineNumber, int charPositionInLine, Collection<ASTFuncDef> funcDefs, ASTScript script) {
-        super(lineNumber, charPositionInLine);
+    public ASTCompileUnit(SourcePosition sourcePos, Collection<ASTFuncDef> funcDefs, ASTScript script) {
+        super(sourcePos);
         this.funcDefs = funcDefs;
         this.script = script;
     }

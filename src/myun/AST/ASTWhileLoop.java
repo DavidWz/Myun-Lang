@@ -10,13 +10,12 @@ public class ASTWhileLoop extends ASTStatement {
     /**
      * Creates a new AST while loop.
      *
-     * @param lineNumber         The line in the source code where this node starts
-     * @param charPositionInLine The character position of this node on its line
+     * @param sourcePos the position of this node in the source code
      * @param condition          The condition for this loop
      * @param block              The loop body
      */
-    public ASTWhileLoop(int lineNumber, int charPositionInLine, ASTExpression condition, ASTBlock block) {
-        super(lineNumber, charPositionInLine);
+    public ASTWhileLoop(SourcePosition sourcePos, ASTExpression condition, ASTBlock block) {
+        super(sourcePos);
         this.condition = condition;
         this.block = block;
     }

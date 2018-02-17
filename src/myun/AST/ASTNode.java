@@ -7,36 +7,22 @@ import myun.scope.Scope;
  */
 public abstract class ASTNode {
     // position in source code
-    private final int lineNumber;
-    private final int charPositionInLine;
+    private final SourcePosition sourcePosition;
 
     // scope to which this node belongs
     private Scope scope;
 
     /**
      * Creates a new AST node.
-     * @param lineNumber The line in the source code where this node starts
-     * @param charPositionInLine The character position of this node on its line
+     * @param sourcePosition the position of this node in the source code
      */
-    ASTNode(int lineNumber, int charPositionInLine) {
-        super();
-        this.lineNumber = lineNumber;
-        this.charPositionInLine = charPositionInLine;
+    ASTNode(SourcePosition sourcePosition) {
+        this.sourcePosition = sourcePosition;
         scope = new Scope(null);
     }
 
-    /**
-     * @return the line in the source where this node starts
-     */
-    public int getLine() {
-        return lineNumber;
-    }
-
-    /**
-     * @return the character position of this node on its line
-     */
-    public int getCharPositionInLine() {
-        return charPositionInLine;
+    public SourcePosition getSourcePosition() {
+        return sourcePosition;
     }
 
     public Scope getScope() {

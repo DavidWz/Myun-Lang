@@ -5,19 +5,21 @@ import myun.AST.*;
 /**
  * Creates and initializes all scopes for the program.
  */
-public class ScopeInitializer implements ASTVisitor<Void> {
+public final class ScopeInitializer implements ASTVisitor<Void> {
     private Scope currentScope;
 
+    private ScopeInitializer(Scope parentScope) {
+        currentScope = parentScope;
+    }
+
     /**
-     * Initializes the scope of the given program.
+     * Initializes the scopes of the given program.
      *
      * @param program the program
-     * @param parentScope the parent scope
+     * @param parentScope the top-most scope
      */
-    public ScopeInitializer(ASTCompileUnit program, Scope parentScope) {
-        super();
-        currentScope = parentScope;
-        program.accept(this);
+    public static void initScopes(ASTCompileUnit program, Scope parentScope) {
+        program.accept(new ScopeInitializer(parentScope));
     }
 
     @Override
@@ -25,12 +27,6 @@ public class ScopeInitializer implements ASTVisitor<Void> {
         node.setScope(currentScope);
         node.getVariable().accept(this);
         node.getExpr().accept(this);
-        return null;
-    }
-
-    @Override
-    public Void visit(ASTBasicType node) {
-        node.setScope(currentScope);
         return null;
     }
 
@@ -72,7 +68,7 @@ public class ScopeInitializer implements ASTVisitor<Void> {
     }
 
     @Override
-    public Void visit(ASTConstant node) {
+    public <CT> Void visit(ASTConstant<CT> node) {
         node.setScope(currentScope);
         return null;
     }
@@ -117,11 +113,7 @@ public class ScopeInitializer implements ASTVisitor<Void> {
         // so that parameter variables do not interfere with other function parameters
         currentScope = new Scope(parentScope);
 
-        node.getParameters().forEach(param -> {
-            param.accept(this);
-            param.getType().ifPresent(t -> t.accept(this));
-        });
-        node.getReturnType().ifPresent(t -> t.accept(this));
+        node.getParameters().forEach(param -> param.accept(this));
         node.getBlock().accept(this);
 
         currentScope = parentScope;
@@ -132,14 +124,6 @@ public class ScopeInitializer implements ASTVisitor<Void> {
     public Void visit(ASTFuncReturn node) {
         node.setScope(currentScope);
         node.getExpr().accept(this);
-        return null;
-    }
-
-    @Override
-    public Void visit(ASTFuncType node) {
-        node.setScope(currentScope);
-        node.getParameterTypes().forEach(p -> p.accept(this));
-        node.getReturnType().accept(this);
         return null;
     }
 

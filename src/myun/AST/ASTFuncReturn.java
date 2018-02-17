@@ -9,12 +9,11 @@ public class ASTFuncReturn extends ASTStatement {
     /**
      * Creates a new AST function return.
      *
-     * @param lineNumber         The line in the source code where this node starts
-     * @param charPositionInLine The character position of this node on its line
+     * @param sourcePos the position of this node in the source code
      * @param expr               The returned expression
      */
-    public ASTFuncReturn(int lineNumber, int charPositionInLine, ASTExpression expr) {
-        super(lineNumber, charPositionInLine);
+    public ASTFuncReturn(SourcePosition sourcePos, ASTExpression expr) {
+        super(sourcePos);
         this.expr = expr;
     }
 

@@ -1,7 +1,6 @@
 package myun.AST.constraints;
 
 import myun.AST.ASTCompileUnit;
-import myun.MyunException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,13 +12,12 @@ public class ConstraintChecker {
     private final List<Constraint> constraints;
 
     public ConstraintChecker() {
-        super();
         constraints = new ArrayList<>();
         constraints.add(new NoDuplicateFunctionParamsConstraint());
         constraints.add(new FunctionHasReturnConstraint());
     }
 
-    public void check(ASTCompileUnit compileUnit) throws MyunException {
+    public void check(ASTCompileUnit compileUnit) {
         for (Constraint constraint : constraints) {
             constraint.check(compileUnit);
         }

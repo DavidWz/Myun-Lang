@@ -5,7 +5,6 @@ package myun.type;
  */
 public final class PrimitiveTypes {
     private PrimitiveTypes() {
-        super();
     }
 
     public static final String MYUN_BOOL = "Bool";

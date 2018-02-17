@@ -5,12 +5,11 @@ package myun.AST;
  */
 public abstract class ASTStatement extends ASTNode {
     /**
-     * Creates a new AST node.
+     * Creates a new AST statement.
      *
-     * @param lineNumber         The line in the source code where this node starts
-     * @param charPositionInLine The character position of this node on its line
+     * @param sourcePosition the position of this node in the source code
      */
-    ASTStatement(int lineNumber, int charPositionInLine) {
-        super(lineNumber, charPositionInLine);
+    ASTStatement(SourcePosition sourcePosition) {
+        super(sourcePosition);
     }
 }

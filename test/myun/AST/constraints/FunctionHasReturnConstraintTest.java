@@ -8,7 +8,7 @@ public class FunctionHasReturnConstraintTest {
     private ASTGenerator generator;
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
         generator = new ASTGenerator();
     }
 

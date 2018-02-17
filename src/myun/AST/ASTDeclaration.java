@@ -10,13 +10,12 @@ public class ASTDeclaration extends ASTStatement {
     /**
      * Creates a new AST declaration.
      *
-     * @param lineNumber         The line in the source code where this node starts
-     * @param charPositionInLine The character position of this node on its line
+     * @param sourcePos the position of this node in the source code
      * @param variable           The declared variable
      * @param expr               The expression the variable is assigned to
      */
-    public ASTDeclaration(int lineNumber, int charPositionInLine, ASTVariable variable, ASTExpression expr) {
-        super(lineNumber, charPositionInLine);
+    public ASTDeclaration(SourcePosition sourcePos, ASTVariable variable, ASTExpression expr) {
+        super(sourcePos);
         this.variable = variable;
         this.expr = expr;
     }

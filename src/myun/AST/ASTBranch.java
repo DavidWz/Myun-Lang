@@ -14,13 +14,12 @@ public class ASTBranch extends ASTStatement {
     /**
      * Creates a new AST branch.
      *
-     * @param lineNumber         The line in the source code where this node starts
-     * @param charPositionInLine The character position of this node on its line
+     * @param sourcePos the position of this node in the source code
      * @param conditions         A list of each if/elseif condition
      * @param blocks             A list of each if/elseif/else block
      */
-    public ASTBranch(int lineNumber, int charPositionInLine, List<ASTExpression> conditions, List<ASTBlock> blocks) {
-        super(lineNumber, charPositionInLine);
+    public ASTBranch(SourcePosition sourcePos, List<ASTExpression> conditions, List<ASTBlock> blocks) {
+        super(sourcePos);
         this.conditions = conditions;
         this.blocks = blocks;
     }

@@ -1,10 +1,11 @@
-package myun.type;
+package myun.type.inference;
 
 import myun.AST.*;
 import myun.NotImplementedException;
 import myun.scope.IllegalRedefineException;
 import myun.scope.UndeclaredVariableUsedException;
 import myun.scope.VariableInfo;
+import myun.type.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -13,7 +14,6 @@ import java.util.stream.Collectors;
  * Infers types of expressions and functions.
  */
 public class TypeInferrer implements ASTVisitor<Void> {
-
     /**
      * Infers and sets the types in the given ast node.
      *
@@ -21,11 +21,16 @@ public class TypeInferrer implements ASTVisitor<Void> {
      * @throws CouldNotInferTypeException thrown when a type could not be inferred
      * @throws TypeMismatchException      thrown when two types mismatch
      */
-    public void inferTypes(ASTNode node) throws CouldNotInferTypeException, TypeMismatchException {
+    public void inferTypes(ASTNode node) {
         node.accept(this);
     }
 
-    private String javaTypeToMyunType(String javaName) {
+    /**
+     * Converts the name of a java type to the name of the corresponding myun type.
+     * @param javaName the name of the java type
+     * @return the name of the myun type
+     */
+    private static String javaTypeToMyunType(String javaName) {
         switch (javaName) {
             case "Integer":
                 return PrimitiveTypes.MYUN_INT;
@@ -34,7 +39,27 @@ public class TypeInferrer implements ASTVisitor<Void> {
             case "Boolean":
                 return PrimitiveTypes.MYUN_BOOL;
             default:
-                throw new RuntimeException("Unknown constant type " + javaName);
+                throw new ParserException("Type \"" + javaName + "\" unknown", new SourcePosition());
+        }
+    }
+
+    /**
+     * Checks if all return statements in a function have the same type as the return type of the function.
+     * @param funcDef the function definition to be checked
+     */
+    private static void checkReturnTypes(ASTFuncDef funcDef) {
+        funcDef.accept(new ReturnTypeChecker(funcDef));
+    }
+
+    /**
+     * Ensures that the type of the given expression is fully known.
+     * Throws an exception otherwise.
+     *
+     * @param expr the expression
+     */
+    private static void ensureFullyKnownType(ASTExpression expr) {
+        if (!expr.getType().isFullyKnown()) {
+            throw new CouldNotInferTypeException(expr);
         }
     }
 
@@ -42,32 +67,28 @@ public class TypeInferrer implements ASTVisitor<Void> {
     public Void visit(ASTAssignment node) {
         // determine the type of the expression
         node.getExpr().accept(this);
-        ASTType exprType = node.getExpr().getType().orElseThrow(() -> new CouldNotInferTypeException(node.getExpr()));
+        ensureFullyKnownType(node.getExpr());
+        MyunType exprType = node.getExpr().getType();
         ASTVariable var = node.getVariable();
 
         // check if this variable has been declared already
         if (node.getScope().isDeclared(var)) {
             // make sure it is actually assignable
             if (!node.getScope().getVarInfo(var).isAssignable()) {
-                throw new NotAssignableException(node);
+                throw new NotAssignableException(node.getSourcePosition());
             }
 
             // make sure the types match
-            ASTType varType = node.getScope().getVarInfo(var).getType();
+            MyunType varType = node.getScope().getVarInfo(var).getType();
             if (varType.equals(exprType)) {
                 var.setType(varType);
             } else {
-                throw new TypeMismatchException(exprType, varType, node.getExpr());
+                throw new TypeMismatchException(exprType, varType, node.getExpr().getSourcePosition());
             }
         } else {
             throw new UndeclaredVariableUsedException(var);
         }
 
-        return null;
-    }
-
-    @Override
-    public Void visit(ASTBasicType node) {
         return null;
     }
 
@@ -83,12 +104,11 @@ public class TypeInferrer implements ASTVisitor<Void> {
         // make sure the conditions are of type boolean
         node.getConditions().forEach(cond -> {
             cond.accept(this);
-            ASTBasicType boolType = new ASTBasicType(cond.getLine(),
-                    cond.getCharPositionInLine(),
-                    PrimitiveTypes.MYUN_BOOL);
-            ASTType condType = cond.getType().orElseThrow(() -> new CouldNotInferTypeException(cond));
+            ensureFullyKnownType(cond);
+            BasicType boolType = new BasicType(PrimitiveTypes.MYUN_BOOL);
+            MyunType condType = cond.getType();
             if (!boolType.equals(condType)) {
-                throw new TypeMismatchException(condType, boolType, cond);
+                throw new TypeMismatchException(condType, boolType, cond.getSourcePosition());
             }
         });
 
@@ -106,11 +126,10 @@ public class TypeInferrer implements ASTVisitor<Void> {
     }
 
     @Override
-    public Void visit(ASTConstant node) {
+    public <CT> Void visit(ASTConstant<CT> node) {
         // convert java class types to Myun type names
         String typeName = javaTypeToMyunType(node.getValue().getClass().getSimpleName());
-        ASTBasicType type = new ASTBasicType(node.getLine(), node.getCharPositionInLine(), typeName);
-        node.setType(type);
+        node.setType(new BasicType(typeName));
         return null;
     }
 
@@ -118,14 +137,15 @@ public class TypeInferrer implements ASTVisitor<Void> {
     public Void visit(ASTDeclaration node) {
         // determine the type of the expression
         node.getExpr().accept(this);
+        ensureFullyKnownType(node.getExpr());
         ASTVariable var = node.getVariable();
 
         // check if this variable has already been declared
         if (var.getScope().isDeclared(var)) {
             // this variable already exists
             throw new IllegalRedefineException(node.getVariable().getName(),
-                    node.getScope().getVarInfo(var).getDeclaration(),
-                    node);
+                    node.getScope().getVarInfo(var).getDeclaration().getSourcePosition(),
+                    node.getSourcePosition());
         }
         // this variable does not exist yet, so declare it
         node.getScope().declareVariable(node); // it is assignable by default
@@ -139,32 +159,27 @@ public class TypeInferrer implements ASTVisitor<Void> {
         ASTVariable itVar = node.getVariable();
         if (itVar.getScope().isDeclared(itVar)) {
             throw new IllegalRedefineException(itVar.getName(),
-                    itVar.getScope().getVarInfo(itVar).getDeclaration(),
-                    itVar);
+                    itVar.getScope().getVarInfo(itVar).getDeclaration().getSourcePosition(),
+                    itVar.getSourcePosition());
         }
 
         // define that variable in the scope
-        ASTBasicType intType = new ASTBasicType(itVar.getLine(),
-                itVar.getCharPositionInLine(),
-                PrimitiveTypes.MYUN_INT);
+        BasicType intType = new BasicType(PrimitiveTypes.MYUN_INT);
         itVar.getScope().declareVariable(itVar, new VariableInfo(intType, false, node));
 
         // make sure from and to expressions are of type int
         node.getFrom().accept(this);
         node.getTo().accept(this);
-        ASTType fromType = node.getFrom().getType().orElseThrow(() -> new CouldNotInferTypeException(node.getFrom()));
-        ASTType toType = node.getTo().getType().orElseThrow(() -> new CouldNotInferTypeException(node.getTo()));
+        ensureFullyKnownType(node.getFrom());
+        ensureFullyKnownType(node.getTo());
+        MyunType fromType = node.getFrom().getType();
+        MyunType toType = node.getTo().getType();
 
-        ASTBasicType fromIntType = new ASTBasicType(node.getFrom().getLine(), node.getFrom().getCharPositionInLine(),
-                PrimitiveTypes.MYUN_INT);
-        if (!fromIntType.equals(fromType)) {
-            throw new TypeMismatchException(fromType, fromIntType, node.getFrom());
+        if (!intType.equals(fromType)) {
+            throw new TypeMismatchException(fromType, intType, node.getFrom().getSourcePosition());
         }
-
-        ASTBasicType toIntType = new ASTBasicType(node.getTo().getLine(), node.getTo().getCharPositionInLine(),
-                PrimitiveTypes.MYUN_INT);
-        if (!toIntType.equals(toType)) {
-            throw new TypeMismatchException(toType, toIntType, node.getTo());
+        if (!intType.equals(toType)) {
+            throw new TypeMismatchException(toType, intType, node.getTo().getSourcePosition());
         }
 
         // finally, infer the types in the block
@@ -177,11 +192,9 @@ public class TypeInferrer implements ASTVisitor<Void> {
         node.getArgs().forEach(arg -> arg.accept(this));
 
         // ask the scope for the type
-        List<ASTType> paramTypes = node.getArgs().stream().
-                map(arg -> arg.getType().orElseThrow(() -> new CouldNotInferTypeException(arg))).
-                collect(Collectors.toList());
+        List<MyunType> paramTypes = node.getArgs().stream().map(ASTExpression::getType).collect(Collectors.toList());
         FuncHeader funcHeader = new FuncHeader(node.getFunction(), paramTypes);
-        ASTType returnType =  node.getScope().getFunctionInfo(node, funcHeader).getType().getReturnType();
+        MyunType returnType =  node.getScope().getFunctionInfo(funcHeader, node.getSourcePosition()).getType().getReturnType();
         node.setType(returnType);
 
         return null;
@@ -189,24 +202,26 @@ public class TypeInferrer implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTFuncDef node) {
+        // we cannot infer the return type of the function yet
+        if (!node.getReturnType().isFullyKnown()) {
+            throw new NotImplementedException("return type inference", node.getSourcePosition());
+        }
+
         // make the parameters known to the scope with their annotated type
         node.getParameters().forEach(param -> {
-            ASTType type = param.getType().orElseThrow(() ->
-                    new NotImplementedException("Type inference is not supported yet!", param));
-            VariableInfo varInfo = new VariableInfo(type, false, param);
+            ensureFullyKnownType(param);
+            VariableInfo varInfo = new VariableInfo(param.getType(), false, param);
             param.getScope().declareVariable(param, varInfo);
         });
 
         // retrieve the type of this function
-        List<ASTType> paramTypes = node.getParameters().stream().map(param -> param.getType().
-                orElseThrow(() -> new CouldNotInferTypeException(param))).collect(Collectors.toList());
+        List<MyunType> paramTypes = node.getParameters().stream().map(ASTExpression::getType).collect(Collectors.toList());
         FuncHeader funcHeader = new FuncHeader(node.getName(), paramTypes);
 
         // make sure this function has not been declared yet
         if (node.getScope().isDeclared(funcHeader)) {
-            throw new IllegalRedefineException(node.getName(),
-                    node.getScope().getFunctionInfo(node, funcHeader).getFuncDef(),
-                    node);
+            ASTFuncDef originalDef = node.getScope().getFunctionInfo(funcHeader, node.getSourcePosition()).getFuncDef();
+            throw new IllegalRedefineException(node.getName(), originalDef.getSourcePosition(), node.getSourcePosition());
         }
 
         // declare this function
@@ -216,7 +231,7 @@ public class TypeInferrer implements ASTVisitor<Void> {
         node.getBlock().accept(this);
 
         // check if all the return expression types match the actual return type
-        new ReturnTypeChecker(node);
+        checkReturnTypes(node);
 
         return null;
     }
@@ -224,11 +239,6 @@ public class TypeInferrer implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTFuncReturn node) {
         node.getExpr().accept(this);
-        return null;
-    }
-
-    @Override
-    public Void visit(ASTFuncType node) {
         return null;
     }
 

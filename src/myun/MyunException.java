@@ -1,13 +1,14 @@
 package myun;
 
+import myun.AST.SourcePosition;
+
 /**
  * Abstract class for Myun exceptions.
  */
 public abstract class MyunException extends RuntimeException {
-    protected MyunException() {
-    }
+    protected final SourcePosition sourcePosition;
 
-    protected MyunException(String msg) {
-        super(msg);
+    protected MyunException(SourcePosition sourcePosition) {
+        this.sourcePosition = sourcePosition;
     }
 }

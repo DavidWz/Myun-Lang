@@ -8,17 +8,12 @@ import myun.AST.*;
 class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boolean> {
 
     @Override
-    public void check(ASTCompileUnit compileUnit) throws ReturnMissingException {
+    public void check(ASTCompileUnit compileUnit) {
         compileUnit.accept(this);
     }
 
     @Override
     public Boolean visit(ASTAssignment node) {
-        return false;
-    }
-
-    @Override
-    public Boolean visit(ASTBasicType node) {
         return false;
     }
 
@@ -32,7 +27,7 @@ class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boolean> {
         // if there is no return statement at the end
         // we need to traverse the statements from
         else {
-            for (int i = node.getStatements().size() - 1; 0 <= i; i--) {
+            for (int i = node.getStatements().size() - 1; i >= 0; i--) {
                 if (node.getStatements().get(i).accept(this)) {
                     return true;
                 }
@@ -52,7 +47,7 @@ class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boolean> {
     }
 
     @Override
-    public Boolean visit(ASTConstant node) {
+    public <CT> Boolean visit(ASTConstant<CT> node) {
         return false;
     }
 
@@ -82,11 +77,6 @@ class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boolean> {
     @Override
     public Boolean visit(ASTFuncReturn node) {
         return true;
-    }
-
-    @Override
-    public Boolean visit(ASTFuncType node) {
-        return false;
     }
 
     @Override

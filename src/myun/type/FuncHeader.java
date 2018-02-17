@@ -1,4 +1,4 @@
-package myun.AST;
+package myun.type;
 
 import java.util.List;
 
@@ -7,10 +7,9 @@ import java.util.List;
  */
 public class FuncHeader {
     private final String name;
-    private final List<ASTType> parameterTypes;
+    private final List<MyunType> parameterTypes;
 
-    public FuncHeader(String name, List<ASTType> parameterTypes) {
-        super();
+    public FuncHeader(String name, List<MyunType> parameterTypes) {
         this.name = name;
         this.parameterTypes = parameterTypes;
     }
@@ -19,7 +18,7 @@ public class FuncHeader {
         return name;
     }
 
-    public List<ASTType> getParameterTypes() {
+    public List<MyunType> getParameterTypes() {
         return parameterTypes;
     }
 
@@ -28,20 +27,20 @@ public class FuncHeader {
         if (this == o) {
             return true;
         }
-        if ((null == o) || (getClass() != o.getClass())) {
+        if ((o == null) || (getClass() != o.getClass())) {
             return false;
         }
 
         FuncHeader that = (FuncHeader) o;
 
-        return getName().equals(that.getName()) && getParameterTypes().equals(that.getParameterTypes());
+        return name.equals(that.name) && parameterTypes.equals(that.parameterTypes);
 
     }
 
     @Override
     public int hashCode() {
-        int result = getName().hashCode();
-        result = (31 * result) + getParameterTypes().hashCode();
+        int result = name.hashCode();
+        result = (31 * result) + parameterTypes.hashCode();
         return result;
     }
 }

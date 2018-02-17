@@ -12,7 +12,7 @@ public class UndeclaredVariableUsedException extends MyunException {
     private final MyunPrettyPrinter prettyPrinter;
 
     public UndeclaredVariableUsedException(ASTVariable variable) {
-        super();
+        super(variable.getSourcePosition());
         this.variable = variable;
         prettyPrinter = new MyunPrettyPrinter();
     }
@@ -20,6 +20,6 @@ public class UndeclaredVariableUsedException extends MyunException {
     @Override
     public String getMessage() {
         return "Error: Undeclared variable " + variable.accept(prettyPrinter) +
-                " used on line " + variable.getLine() + " at " + variable.getCharPositionInLine();
+                " used on " + sourcePosition;
     }
 }

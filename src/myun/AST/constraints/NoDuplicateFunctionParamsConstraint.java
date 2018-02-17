@@ -24,11 +24,6 @@ class NoDuplicateFunctionParamsConstraint implements Constraint, ASTVisitor<Opti
     }
 
     @Override
-    public Optional<ASTVariable> visit(ASTBasicType node) {
-        return Optional.empty();
-    }
-
-    @Override
     public Optional<ASTVariable> visit(ASTBlock node) {
         return Optional.empty();
     }
@@ -50,7 +45,7 @@ class NoDuplicateFunctionParamsConstraint implements Constraint, ASTVisitor<Opti
     }
 
     @Override
-    public Optional<ASTVariable> visit(ASTConstant node) {
+    public <CT> Optional<ASTVariable> visit(ASTConstant<CT> node) {
         return Optional.empty();
     }
 
@@ -83,11 +78,6 @@ class NoDuplicateFunctionParamsConstraint implements Constraint, ASTVisitor<Opti
 
     @Override
     public Optional<ASTVariable> visit(ASTFuncReturn node) {
-        return Optional.empty();
-    }
-
-    @Override
-    public Optional<ASTVariable> visit(ASTFuncType node) {
         return Optional.empty();
     }
 

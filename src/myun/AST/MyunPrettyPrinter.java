@@ -1,13 +1,17 @@
 package myun.AST;
 
+import myun.type.BasicType;
+import myun.type.FuncType;
+import myun.type.TypeVisitor;
+import myun.type.UnknownType;
+
 /**
  * Prints the AST in a readable format.
  */
-public class MyunPrettyPrinter implements ASTVisitor<String> {
+public class MyunPrettyPrinter implements ASTVisitor<String>, TypeVisitor<String> {
     private int indentLevel;
 
     public MyunPrettyPrinter() {
-        super();
         init();
     }
 
@@ -25,7 +29,7 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
      */
     private void indent(StringBuilder sb) {
         for (int i = 0; i < indentLevel; i++) {
-            sb.append("\t");
+            sb.append('\t');
         }
     }
 
@@ -37,13 +41,13 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
         sb.append(node.getVariable().accept(this));
         sb.append(" = ");
         sb.append(node.getExpr().accept(this));
-        sb.append("\n");
+        sb.append('\n');
 
         return sb.toString();
     }
 
     @Override
-    public String visit(ASTBasicType node) {
+    public String visit(BasicType node) {
         return node.getName();
     }
 
@@ -88,13 +92,13 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
     @Override
     public String visit(ASTCompileUnit node) {
         StringBuilder sb = new StringBuilder();
-        node.getFuncDefs().forEach(funcDef -> sb.append(funcDef.accept(this)).append("\n"));
+        node.getFuncDefs().forEach(funcDef -> sb.append(funcDef.accept(this)).append('\n'));
         sb.append(node.getScript().accept(this));
         return sb.toString();
     }
 
     @Override
-    public String visit(ASTConstant node) {
+    public <CT> String visit(ASTConstant<CT> node) {
         return node.getValue().toString();
     }
 
@@ -106,7 +110,7 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
         sb.append(node.getVariable().accept(this));
         sb.append(" := ");
         sb.append(node.getExpr().accept(this));
-        sb.append("\n");
+        sb.append('\n');
 
         return sb.toString();
     }
@@ -129,7 +133,7 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
     public String visit(ASTFuncCall node) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append(node.getFunction()).append("(");
+        sb.append(node.getFunction()).append('(');
         for (int i = 0; i < node.getArgs().size(); i++) {
             ASTExpression expr = node.getArgs().get(i);
             sb.append(expr.accept(this));
@@ -138,7 +142,7 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
                 sb.append(", ");
             }
         }
-        sb.append(")");
+        sb.append(')');
         return sb.toString();
     }
 
@@ -147,7 +151,7 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
         StringBuilder sb = new StringBuilder();
 
         indent(sb);
-        sb.append(node.getName()).append("(");
+        sb.append(node.getName()).append('(');
         for (int i = 0; i < node.getParameters().size(); i++) {
             ASTExpression expr = node.getParameters().get(i);
             sb.append(expr.accept(this));
@@ -156,10 +160,10 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
                 sb.append(", ");
             }
         }
-        sb.append(")");
-        node.getReturnType().ifPresent(type -> sb.append("::").append(type.accept(this)));
+        sb.append(')');
+        sb.append(node.getReturnType().accept(this));
 
-        sb.append("\n").append(node.getBlock().accept(this));
+        sb.append('\n').append(node.getBlock().accept(this));
         indent(sb);
         sb.append("end\n");
         return sb.toString();
@@ -169,28 +173,33 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
     public String visit(ASTFuncReturn node) {
         StringBuilder sb = new StringBuilder();
         indent(sb);
-        sb.append("return ").append(node.getExpr().accept(this)).append("\n");
+        sb.append("return ").append(node.getExpr().accept(this)).append('\n');
         return sb.toString();
     }
 
     @Override
-    public String visit(ASTFuncType node) {
+    public String visit(FuncType node) {
         StringBuilder sb = new StringBuilder();
         if (node.getParameterTypes().isEmpty()) {
             sb.append("()");
         }
-        else if (1 == node.getParameterTypes().size()) {
+        else if (node.getParameterTypes().size() == 1) {
             sb.append(node.getParameterTypes().get(0).accept(this));
         }
         else {
-            sb.append("(").append(node.getParameterTypes().get(0).accept(this));
+            sb.append('(').append(node.getParameterTypes().get(0).accept(this));
             for (int i = 1; i < node.getParameterTypes().size(); i++) {
                 sb.append(", ").append(node.getParameterTypes().get(i).accept(this));
             }
-            sb.append(")");
+            sb.append(')');
         }
         sb.append(" -> ").append(node.getReturnType().accept(this));
         return sb.toString();
+    }
+
+    @Override
+    public String visit(UnknownType type) {
+        return "?";
     }
 
     @Override
@@ -203,15 +212,13 @@ public class MyunPrettyPrinter implements ASTVisitor<String> {
 
     @Override
     public String visit(ASTScript node) {
-        return "script " + node.getName() + "\n" + node.getBlock().accept(this) + "end\n";
+        return "script " + node.getName() + '\n' + node.getBlock().accept(this) + "end\n";
     }
 
     @Override
     public String visit(ASTVariable node) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(node.getName());
-        node.getType().ifPresent(type -> sb.append("::").append(type.accept(this)));
-        return sb.toString();
+        return node.getName() +
+                "::" + node.getType().accept(this);
     }
 
     @Override

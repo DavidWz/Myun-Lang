@@ -7,11 +7,17 @@ simply because I wanted to try and build a compiler.
 1. Clone this repository
 2. Download and install [ANTLR](http://www.antlr.org/) to generate the parser.
 3. Build the project (you might need to make the antlr jar known to your IDE)
-4. Run [Main](src/myun/Main.java) with the path to your Myun file (`<FileName>.myun`) as the first argument.
-   This will generate LLVM IR code in the same path under `<FileName>.ll`.
-5. Now you need to compile that LLVM IR code. If you have `llc` and `gcc` installed, 
-   you can use my [compile script](src/myun/compile.sh) script with `FileName` as the first argument 
-   like this `./compile <FileName>`. This will produce a binary that you can run. 
+4. Run the [MyunCompiler](src/myun/compiler/MyunCompiler.java) with the path to your Myun file (`<FileName>.myun`) as the first argument.
+   You can optionally specify the LLVM and Assembly compiler, together with the optimization level in the following arguments.
+   If they are not specified, the compiler will use llc, gcc, and -O0.
+   This will generate an executable under the same path under `<FileName>.out`.
+
+Sample arguments:
+```
+Arguments to Main: "<PATH_TO_PROJECT>/examples/miniTypes.myun" lcc gcc 1
+cd <PATH_TO_PROJECT>/examples/
+./miniTypes.out
+```
 
 # Language Description
 In the following I will explain the language, its features, and constraints.
