@@ -28,7 +28,7 @@ public class FunctionOverloadTest {
     @Test
     public void funcOverloadSucceeds() throws IOException, InterruptedException {
         String outputFile = compiler.compileFromFile(resPath+"simpleOverloading.myun");
-        ExecutionResult result = MyunCompiler.runMyunFile(outputFile);
+        ExecutionResult result = CodeRunner.runMyunFile(outputFile);
         assertThat("Exit status should be 0.", 0, is(result.getExitStatus()));
         assertThat("There should be no error.", "", is(result.getErrors()));
 

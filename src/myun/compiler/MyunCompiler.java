@@ -13,21 +13,24 @@ import java.util.stream.Collectors;
  * @noinspection UseOfSystemOutOrSystemErr
  */
 final class MyunCompiler {
-    private final String llvmCompiler;
-    private final String assemblyCompiler;
-    private final int optimizationLevel;
     private static final String DEFAULT_LLVM_COMPILER = "llc";
     private static final String DEFAULT_ASSEMBLY_COMPILER = "gcc";
     private static final int DEFAULT_OPT_LEVEL = 0;
 
-    private MyunCompiler(String llvmCompiler, String assemblyCompiler, int optimizationLevel) {
+    private final String llvmCompiler;
+    private final String assemblyCompiler;
+    private final int optimizationLevel;
+    private final boolean debug;
+
+    private MyunCompiler(String llvmCompiler, String assemblyCompiler, int optimizationLevel, boolean debug) {
         this.llvmCompiler = llvmCompiler;
         this.assemblyCompiler = assemblyCompiler;
         this.optimizationLevel = optimizationLevel;
+        this.debug = debug;
     }
 
     static MyunCompiler getDefaultMyunCompiler() {
-        return new MyunCompiler(DEFAULT_LLVM_COMPILER, DEFAULT_ASSEMBLY_COMPILER, DEFAULT_OPT_LEVEL);
+        return new MyunCompiler(DEFAULT_LLVM_COMPILER, DEFAULT_ASSEMBLY_COMPILER, DEFAULT_OPT_LEVEL, false);
     }
 
     public static void main(String... args) throws IOException, InterruptedException {
@@ -38,11 +41,15 @@ final class MyunCompiler {
         String inputFile = args[0];
 
         MyunCompiler compiler;
-        if (args.length == 4) {
+        if (args.length >= 4) {
             String llvmCompiler = args[1];
             String assemblyCompiler = args[2];
             int optimizationLevel = Integer.parseInt(args[3]);
-            compiler = new MyunCompiler(llvmCompiler, assemblyCompiler, optimizationLevel);
+            boolean debug = false;
+            if ((args.length == 5) && "-debug".equals(args[4])) {
+                debug = true;
+            }
+            compiler = new MyunCompiler(llvmCompiler, assemblyCompiler, optimizationLevel, debug);
         }
         else {
             compiler = getDefaultMyunCompiler();
@@ -77,11 +84,18 @@ final class MyunCompiler {
         typeInferrer.inferTypes(program);
 
         // print the source code
-        MyunPrettyPrinter prettyPrinter = new MyunPrettyPrinter();
+        if (debug) {
+            MyunPrettyPrinter prettyPrinter = new MyunPrettyPrinter();
+            System.out.println(prettyPrinter.toString(program));
+        }
 
         // compile the code
         MyunToLLVMTranslator llvmTranslator = new MyunToLLVMTranslator();
         String llvmCode = llvmTranslator.translateToLLVM(program);
+        if (debug) {
+            System.out.println("### Compiled to: ");
+            System.out.println(llvmCode);
+        }
 
         // write it to the output file
         String outputFile = fileName+".ll";
@@ -108,24 +122,5 @@ final class MyunCompiler {
                 throw new UnsuccessfulCompilationException(error);
             }
         }
-    }
-
-    /**
-     * Runs the given Myun file.
-     *
-     * @param myunFile the llvm code
-     * @return the result of the execution
-     * @throws IOException thrown when a file could not be written
-     * @throws InterruptedException thrown when a process is interrupted
-     */
-    static ExecutionResult runMyunFile(String myunFile) throws IOException, InterruptedException {
-        Runtime rt = Runtime.getRuntime();
-        Process runProcess = rt.exec(myunFile);
-        int exitStatus = runProcess.waitFor();
-        String errors = new BufferedReader(new InputStreamReader(runProcess.getErrorStream()))
-                .lines().collect(Collectors.joining("\n"));
-        String output = new BufferedReader(new InputStreamReader(runProcess.getInputStream()))
-                .lines().collect(Collectors.joining("\n"));
-        return new ExecutionResult(exitStatus, errors, output);
     }
 }

@@ -8,9 +8,12 @@ simply because I wanted to try and build a compiler.
 2. Download and install [ANTLR](http://www.antlr.org/) to generate the parser.
 3. Build the project (you might need to make the antlr jar known to your IDE)
 4. Run the [MyunCompiler](src/myun/compiler/MyunCompiler.java) with the path to your Myun file (`<FileName>.myun`) as the first argument.
-   You can optionally specify the LLVM and Assembly compiler, together with the optimization level in the following arguments.
-   If they are not specified, the compiler will use llc, gcc, and -O0.
    This will generate an executable under the same path under `<FileName>.out`.
+
+You can optionally specify the LLVM and Assembly compiler, together with the optimization level in the following arguments.
+If they are not specified, the compiler will use llc, gcc, and -O0. Furthermore, you can add the `-debug` flag if you want
+the compiler to output some debug information.
+   
 
 Sample arguments:
 ```
@@ -119,10 +122,10 @@ followed by the declaration operator `:=`, and an expression on the right-hand s
 
 ```
 script varDecls:
-    x := 5  // x is of type Int
+    x := 5                             // x is of type Int
     y := -(4.0 * 2.1 + (3.2 mod 1.1))  // y is of type Float
-    z := x < y       // error: lessThan(Int, Float) not defined
-    b := x is 2+3     // b is of type Bool
+    z := x < y                         // error: lessThan(Int, Float) not defined
+    b := x is 2+3                      // b is of type Bool
 end
 ```
 

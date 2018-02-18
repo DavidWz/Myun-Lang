@@ -57,17 +57,6 @@ public class ASTGenerator implements ANTLRErrorListener {
     }
 
     /**
-     * Parses a string of Myun code.
-     *
-     * @param code the myun code
-     * @return an AST representing the program code
-     * @noinspection ElementOnlyUsedFromTestCode
-     */
-    public ASTCompileUnit parseString(String code) {
-        return parse(new ANTLRInputStream(code));
-    }
-
-    /**
      * Parses a char stream of Myun code.
      *
      * @param charStream the char stream
