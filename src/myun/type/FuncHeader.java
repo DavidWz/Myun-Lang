@@ -3,7 +3,7 @@ package myun.type;
 import java.util.List;
 
 /**
- * Wrapper class for function name + parameter types.
+ * Wrapper class for function/procedure name + parameter types.
  */
 public class FuncHeader {
     private final String name;

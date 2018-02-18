@@ -1,0 +1,10 @@
+asd8a83(x, y, z, b)
+    h := z+x*y
+    if b then
+        h = 0
+    end
+    return h
+end
+
+script ash78da
+end

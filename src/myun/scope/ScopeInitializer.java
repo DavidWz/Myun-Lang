@@ -33,15 +33,9 @@ public final class ScopeInitializer implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTBlock node) {
         node.setScope(currentScope);
-        Scope parentScope = currentScope;
-
-        // blocks always open their own scope
-        currentScope = new Scope(parentScope);
         node.getStatements().forEach(stmt -> stmt.accept(this));
         node.getFuncReturn().ifPresent(fR -> fR.accept(this));
         node.getLoopBreak().ifPresent(lB -> lB.accept(this));
-
-        currentScope = parentScope;
         return null;
     }
 
@@ -136,7 +130,20 @@ public final class ScopeInitializer implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTScript node) {
         node.setScope(currentScope);
+        Scope parentScope = currentScope;
+
+        // similarly to functions, scripts have their own scope too
+        currentScope = new Scope(parentScope);
         node.getBlock().accept(this);
+
+        currentScope = parentScope;
+        return null;
+    }
+
+    @Override
+    public Void visit(ASTProcCall node) {
+        node.setScope(currentScope);
+        node.getFuncCall().accept(this);
         return null;
     }
 

@@ -8,7 +8,6 @@ import java.util.Optional;
  * Makes sure that in a function declaration there are no two parameters with the same variable name.
  */
 class NoDuplicateFunctionParamsConstraint implements Constraint, ASTVisitor<Optional<ASTVariable>> {
-
     @Override
     public void check(ASTCompileUnit compileUnit) {
         Optional<ASTVariable> duplicate = compileUnit.accept(this);
@@ -88,6 +87,11 @@ class NoDuplicateFunctionParamsConstraint implements Constraint, ASTVisitor<Opti
 
     @Override
     public Optional<ASTVariable> visit(ASTScript node) {
+        return Optional.empty();
+    }
+
+    @Override
+    public Optional<ASTVariable> visit(ASTProcCall node) {
         return Optional.empty();
     }
 

@@ -35,5 +35,8 @@ approximate(f::Float)::Int
 end
 
 script miniTypes
-    return approximate(sumUpToF(100.0))
+    x := sumUpToF(100.0)
+    y := sumUpTo(100)
+    print(x)
+    print(y)
 end

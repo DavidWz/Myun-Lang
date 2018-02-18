@@ -23,6 +23,7 @@ import myun.AST.constraints.ConstraintChecker;
 import myun.type.BasicType;
 import myun.type.FuncType;
 import myun.type.MyunType;
+import myun.type.UnknownType;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -172,6 +173,9 @@ public class ASTGenerator implements ANTLRErrorListener {
             if (ctx.loop() != null) {
                 return ctx.loop().accept(new LoopVisitor());
             }
+            if (ctx.funcCall() != null) {
+                return new ASTProcCall(ctx.funcCall().accept(new FuncCallVisitor()));
+            }
             throw new ParserException("Unknown statement " + ctx.getText(), getSourcePos(ctx.start));
         }
     }
@@ -189,7 +193,7 @@ public class ASTGenerator implements ANTLRErrorListener {
                 return var;
             }).collect(Collectors.toList());
 
-            MyunType returnType = null;
+            MyunType returnType = new UnknownType();
             if (ctx.returnType != null) {
                 returnType = ctx.returnType.accept(new TypeVisitor());
             }

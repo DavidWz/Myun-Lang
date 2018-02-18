@@ -81,6 +81,11 @@ final class ReturnTypeChecker implements ASTVisitor<Void> {
     }
 
     @Override
+    public Void visit(ASTProcCall node) {
+        return null;
+    }
+
+    @Override
     public Void visit(ASTVariable node) {
         return null;
     }

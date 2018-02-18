@@ -25,7 +25,7 @@ class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boolean> {
             return true;
         }
         // if there is no return statement at the end
-        // we need to traverse the statements from
+        // we need to traverse the statements from end to start and check for return statements
         else {
             for (int i = node.getStatements().size() - 1; i >= 0; i--) {
                 if (node.getStatements().get(i).accept(this)) {
@@ -86,6 +86,11 @@ class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boolean> {
 
     @Override
     public Boolean visit(ASTScript node) {
+        return false;
+    }
+
+    @Override
+    public Boolean visit(ASTProcCall node) {
         return false;
     }
 

@@ -1,19 +1,11 @@
 package myun.AST.constraints;
 
 import myun.AST.ASTVariable;
-import myun.MyunException;
+import myun.AST.ParserException;
 
-class DuplicateParametersException extends MyunException {
-    private final ASTVariable reason;
-
+class DuplicateParametersException extends ParserException {
     DuplicateParametersException(ASTVariable reason) {
-        super(reason.getSourcePosition());
-        this.reason = reason;
-    }
-
-    @Override
-    public String getMessage() {
-        return "Duplicate parameter name \"" + reason.getName() + "\" found in function definition " +
-                "on " + sourcePosition;
+        super("Duplicate parameter name \"" + reason.getName() + "\" found in function definition",
+                reason.getSourcePosition());
     }
 }

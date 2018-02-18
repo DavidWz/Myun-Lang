@@ -17,6 +17,7 @@ statement
     | assignment
     | branch
     | loop
+    | funcCall
     ;
 
 /* Variable declarations */

@@ -1,0 +1,12 @@
+uas7ha(sd8a, aja8a)
+    if sd8a <= 5 then
+        return 4
+    else
+        return aja8a
+    end
+    x := 0
+    y := true
+end
+
+script as8a9
+end

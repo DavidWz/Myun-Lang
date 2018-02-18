@@ -15,6 +15,7 @@ public class ConstraintChecker {
         constraints = new ArrayList<>();
         constraints.add(new NoDuplicateFunctionParamsConstraint());
         constraints.add(new FunctionHasReturnConstraint());
+        constraints.add(new FunctionAndScriptDifferentNameConstraint());
     }
 
     public void check(ASTCompileUnit compileUnit) {

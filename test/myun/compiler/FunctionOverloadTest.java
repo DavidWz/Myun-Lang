@@ -1,72 +1,41 @@
 package myun.compiler;
 
-import myun.scope.IllegalRedefineException;
+import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 /**
- * Tests whether script and functions can have the same names, and if overloading gets parsed.
+ * Tests whether the right overloaded function gets called.
  */
 public class FunctionOverloadTest {
+    private MyunCompiler compiler;
+    private String resPath;
+
+    @Before
+    public void setUp() {
+        File resources = new File("testData/myun/compiler");
+        resPath = resources.getAbsolutePath()+'/';
+        compiler = MyunCompiler.getDefaultMyunCompiler();
+    }
+
     @Test
     public void funcOverloadSucceeds() throws IOException, InterruptedException {
-        String code = "fib(n::Int)::Int\n" +
-                "    return 4"+
-                "end\n" +
-                '\n' +
-                "fib(n::Float)::Float\n" +
-                "    return 4.0"+
-                "end\n script bar end";
-        ExecutionResult result = CodeRunner.runMyunCode(code);
+        String outputFile = compiler.compileFromFile(resPath+"simpleOverloading.myun");
+        ExecutionResult result = MyunCompiler.runMyunFile(outputFile);
         assertThat("Exit status should be 0.", 0, is(result.getExitStatus()));
         assertThat("There should be no error.", "", is(result.getErrors()));
-    }
 
-    @Test(expected = IllegalRedefineException.class)
-    public void funcRedefinitionFails() throws IOException, InterruptedException {
-        String code = "fib(n::Int)::Int\n" +
-                "    return 4"+
-                "end\n" +
-                '\n' +
-                "fib(n::Int)::Int\n" +
-                "    return 5"+
-                "end\n script bar end";
-        CodeRunner.compileStringToString(code);
-    }
-
-    @Test(expected = IllegalRedefineException.class)
-    public void onlyReturnTypeDifferentFails() throws IOException, InterruptedException {
-        String code = "fib(n::Int)::Int\n" +
-                "    return 4"+
-                "end\n" +
-                '\n' +
-                "fib(n::Int)::Float\n" +
-                "    return 5.0"+
-                "end\n script bar end";
-        CodeRunner.compileStringToString(code);
-    }
-
-    @Test
-    public void funcAndScriptSameNameDifferentParamsSucceeds() throws IOException, InterruptedException {
-        String code = "foo(x::Int, y::Int)::Int\n" +
-                "    return y+2\n" +
-                "end script foo end";
-        ExecutionResult result = CodeRunner.runMyunCode(code);
-        assertThat("Exit status should be 0.", 0, is(result.getExitStatus()));
-        assertThat("There should be no error.", "", is(result.getErrors()));
-    }
-
-    @Test
-    public void funcAndScriptSameNameNoParamsSucceeds() throws IOException, InterruptedException {
-        String code = "bar()::Int\n" +
-                "    return 42\n" +
-                "end script bar end";
-        ExecutionResult result = CodeRunner.runMyunCode(code);
-        assertThat("Exit status should be 0.", 0, is(result.getExitStatus()));
-        assertThat("There should be no error.", "", is(result.getErrors()));
+        String output = result.getOutput();
+        String[] lines = output.split("\n");
+        assertThat("There should be two output lines.", 2, is(lines.length));
+        assertTrue("First output should be float 5050", lines[0].startsWith("5050.0"));
+        assertEquals("Second output should be int 5050", "5050", lines[1]);
     }
 }

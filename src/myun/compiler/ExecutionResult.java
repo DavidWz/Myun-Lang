@@ -6,10 +6,13 @@ package myun.compiler;
 class ExecutionResult {
     private final int exitStatus;
     private final String errors;
+    private final String output;
 
-    ExecutionResult(int exitStatus, String errors) {
+    ExecutionResult(int exitStatus, String errors, String output) {
         this.exitStatus = exitStatus;
         this.errors = errors;
+        this.output = output;
+
     }
 
     int getExitStatus() {
@@ -18,5 +21,9 @@ class ExecutionResult {
 
     String getErrors() {
         return errors;
+    }
+
+    String getOutput() {
+        return output;
     }
 }

@@ -17,6 +17,7 @@ public interface ASTVisitor<T> {
     T visit(ASTFuncReturn node);
     T visit(ASTLoopBreak node);
     T visit(ASTScript node);
+    T visit(ASTProcCall node);
     T visit(ASTVariable node);
     T visit(ASTWhileLoop node);
 }

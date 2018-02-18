@@ -2,6 +2,7 @@ package myun.compiler;
 
 import myun.AST.*;
 import myun.NotImplementedException;
+import myun.scope.LLVMInstruction;
 import myun.scope.MyunCoreScope;
 import myun.scope.TypeNotInferredException;
 import myun.type.*;
@@ -48,8 +49,10 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
     String translateToLLVM(ASTCompileUnit myunProgram) {
         init();
 
-        // for debug purposes, add printf declaration and a string to print integers
-        llvmCode.append("@.str = private unnamed_addr constant [4 x i8] c\"%d\\0A\\00\", align 1\n");
+        // declare IO functions
+        llvmCode.append("@.str = private unnamed_addr constant [6 x i8] c\"%lld\\0A\\00\", align 1\n");
+        llvmCode.append("@.str.1 = private unnamed_addr constant [4 x i8] c\"%f\\0A\\00\", align 1\n");
+        // FIXME: convert return type to 64 bit. or better: add support for procedures that don't return anything
         llvmCode.append("declare i32 @printf(i8*, ...)\n\n");
 
         myunProgram.accept(this);
@@ -265,9 +268,9 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
 
         // retrieve the appropriate llvm instruction
         StringBuilder callBuilder = new StringBuilder();
-        Optional<String> llvmInstruction = MyunCoreScope.getLLVMOperation(node.getFunction(), argTypes);
+        Optional<LLVMInstruction> llvmInstruction = MyunCoreScope.getLLVMInstruction(node.getFunction(), argTypes);
         if (llvmInstruction.isPresent()) {
-            callBuilder.append(llvmInstruction.get()).append(' ');
+            callBuilder.append(llvmInstruction.get().getInstruction()).append(' ');
         } else {
             callBuilder.append("call ").append(retType.accept(this)).append(" @").append(node.getFunction()).append('(');
         }
@@ -280,7 +283,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
             String argVal = getConstantOrRegister(arg);
 
             // for native llvm instructions we do not need to annotate the type
-            if (!llvmInstruction.isPresent()) {
+            if (!llvmInstruction.isPresent() || llvmInstruction.get().isNeedsTypes()) {
                 callBuilder.append(arg.getType().accept(this));
                 callBuilder.append(' ');
             }
@@ -292,7 +295,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
                 callBuilder.append(", ");
             }
         }
-        if (!llvmInstruction.isPresent()) {
+        if (!llvmInstruction.isPresent() || llvmInstruction.get().isNeedsClosingParenthesis()) {
             callBuilder.append(')');
         }
 
@@ -357,20 +360,23 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
 
     @Override
     public String visit(ASTScript node) {
-        // the script function returns an integer (default 0)
-        llvmCode.append("define ").append(PrimitiveTypes.LLVM_INT).append(" @").append(node.getName()).append("() {\n");
-        llvmCode.append("entry:\n");
+        // TODO: what if another function is called "main" ?
+        // the script is our main function and always returns 0
+        llvmCode.append("define ").append(PrimitiveTypes.LLVM_INT).append(" @main() {\n");
         node.getBlock().accept(this);
         llvmCode.append("\tret ").append(PrimitiveTypes.LLVM_INT).append(" 0\n");
-        llvmCode.append("}\n\n");
-
-        // the main function prints the result of the script
-        llvmCode.append("define ").append(PrimitiveTypes.LLVM_INT).append(" @main() {\n");
-        llvmCode.append("\t%1 = call ").append(PrimitiveTypes.LLVM_INT).append(" @").append(node.getName()).append("()\n");
-        llvmCode.append("\t%2 = call i32 (i8*, ...) ");
-        llvmCode.append("@printf(i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str, i32 0, i32 0), i32 %1)\n");
-        llvmCode.append("\tret ").append(PrimitiveTypes.LLVM_INT).append(" 0\n");
         llvmCode.append("}\n");
+
+        return null;
+    }
+
+    @Override
+    public String visit(ASTProcCall node) {
+        // get a dummy register
+        String tmp = getNextRegister();
+        String callVal = node.getFuncCall().accept(this);
+
+        llvmCode.append('\t').append(tmp).append(" = ").append(callVal).append('\n');
 
         return null;
     }

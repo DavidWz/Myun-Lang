@@ -1,0 +1,6 @@
+script as9da9
+    var1 := 5
+    var2 := 7
+    var1 = var2
+    var3 := var1
+end

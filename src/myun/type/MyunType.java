@@ -11,7 +11,7 @@ public interface MyunType {
 
     /**
      * Visits a given AST visitor.
-     * @param visitor the ast visitor
+     * @param visitor the AST visitor
      */
     <T> T accept(TypeVisitor<T> visitor);
 }

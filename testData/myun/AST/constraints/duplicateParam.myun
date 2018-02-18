@@ -1,0 +1,6 @@
+foo(x, y, z, x, a)
+    return false
+end
+
+script as8a
+end

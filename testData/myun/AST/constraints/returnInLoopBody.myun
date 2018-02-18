@@ -1,0 +1,13 @@
+kozoo(x, y)
+    // not every execution path returns a value (e.g. when x is greater than 1829
+    for i from x to 1829 do
+        if i mod 6 is 5 then
+            return false
+        else
+            return true
+        end
+    end
+end
+
+script aias9
+end

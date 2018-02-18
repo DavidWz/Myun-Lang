@@ -1,0 +1,16 @@
+asdas8()::Int
+    x := 5
+    y := 3+x
+    for i from 1 to 100 do
+        if y > 5 then
+            z := 2
+            x := z+2
+        else
+            y = y+2
+        end
+    end
+    return y
+end
+
+script ogiahs
+end

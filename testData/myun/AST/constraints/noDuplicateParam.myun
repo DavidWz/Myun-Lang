@@ -1,0 +1,6 @@
+asdua8(x, y, a, a9, x101, yy)
+    return asdua8(x, y, x, y, x)
+end
+
+script asa
+end

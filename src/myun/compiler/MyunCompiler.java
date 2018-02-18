@@ -26,7 +26,7 @@ final class MyunCompiler {
         this.optimizationLevel = optimizationLevel;
     }
 
-    public static MyunCompiler getDefaultMyunCompiler() {
+    static MyunCompiler getDefaultMyunCompiler() {
         return new MyunCompiler(DEFAULT_LLVM_COMPILER, DEFAULT_ASSEMBLY_COMPILER, DEFAULT_OPT_LEVEL);
     }
 
@@ -55,10 +55,11 @@ final class MyunCompiler {
      * Compiles myun code from a file and writes the resulting llvm ir code to an output file.
      *
      * @param inputFile the path to the input file
+     * @return the output file path
      * @throws IOException thrown when the file could not be loaded or written to
      */
-    private void compileFromFile(String inputFile) throws IOException, InterruptedException {
-        // generate the ast
+    String compileFromFile(String inputFile) throws IOException, InterruptedException {
+        // generate the AST
         ASTGenerator astGen = new ASTGenerator();
         ASTCompileUnit program = astGen.parseFile(inputFile);
         String fileName;
@@ -77,13 +78,10 @@ final class MyunCompiler {
 
         // print the source code
         MyunPrettyPrinter prettyPrinter = new MyunPrettyPrinter();
-        System.out.println(prettyPrinter.toString(program));
 
         // compile the code
-        System.out.println("### Compiled to: ### \n");
         MyunToLLVMTranslator llvmTranslator = new MyunToLLVMTranslator();
         String llvmCode = llvmTranslator.translateToLLVM(program);
-        System.out.println(llvmCode);
 
         // write it to the output file
         String outputFile = fileName+".ll";
@@ -92,12 +90,11 @@ final class MyunCompiler {
         writer.close();
 
         // compile the llvm code
-        System.out.println("### LLVM compiled with: ");
-        System.out.println(llvmCompiler + ", " + assemblyCompiler + ", -O" + optimizationLevel);
         runCompileChain(fileName);
+        return fileName+".out";
     }
 
-    void runCompileChain(String fileName) throws IOException, InterruptedException {
+    private void runCompileChain(String fileName) throws IOException, InterruptedException {
         Runtime rt = Runtime.getRuntime();
         String[] execCodes = {llvmCompiler+" -O"+optimizationLevel+ ' ' +fileName+".ll",
                 assemblyCompiler+" -c "+fileName+".s -o "+fileName+".o",
@@ -111,5 +108,24 @@ final class MyunCompiler {
                 throw new UnsuccessfulCompilationException(error);
             }
         }
+    }
+
+    /**
+     * Runs the given Myun file.
+     *
+     * @param myunFile the llvm code
+     * @return the result of the execution
+     * @throws IOException thrown when a file could not be written
+     * @throws InterruptedException thrown when a process is interrupted
+     */
+    static ExecutionResult runMyunFile(String myunFile) throws IOException, InterruptedException {
+        Runtime rt = Runtime.getRuntime();
+        Process runProcess = rt.exec(myunFile);
+        int exitStatus = runProcess.waitFor();
+        String errors = new BufferedReader(new InputStreamReader(runProcess.getErrorStream()))
+                .lines().collect(Collectors.joining("\n"));
+        String output = new BufferedReader(new InputStreamReader(runProcess.getInputStream()))
+                .lines().collect(Collectors.joining("\n"));
+        return new ExecutionResult(exitStatus, errors, output);
     }
 }

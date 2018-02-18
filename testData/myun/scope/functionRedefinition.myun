@@ -1,0 +1,10 @@
+foo(x::Int)::Int
+    return x
+end
+
+foo(y::Int)::Float
+    return 5.0
+end
+
+script bar
+end

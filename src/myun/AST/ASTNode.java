@@ -35,7 +35,7 @@ public abstract class ASTNode {
 
     /**
      * Visits a given AST visitor.
-     * @param visitor the ast visitor
+     * @param visitor the AST visitor
      */
     public abstract <T> T accept(ASTVisitor<T> visitor);
 }

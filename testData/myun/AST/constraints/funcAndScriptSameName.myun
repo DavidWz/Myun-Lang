@@ -1,0 +1,7 @@
+foo()::Int
+    return 5
+end
+
+script foo
+    print(foo())
+end

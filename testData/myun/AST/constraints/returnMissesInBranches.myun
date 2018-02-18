@@ -1,0 +1,13 @@
+duas8a00()
+    x := 0
+    if x > 0 then
+        x = x + 1
+    elseif x < 0 then
+        return 5.0
+    else
+        x = x - 1
+    end
+end
+
+script asd8a
+end

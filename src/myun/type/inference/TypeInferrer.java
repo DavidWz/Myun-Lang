@@ -15,11 +15,9 @@ import java.util.stream.Collectors;
  */
 public class TypeInferrer implements ASTVisitor<Void> {
     /**
-     * Infers and sets the types in the given ast node.
+     * Infers and sets the types in the given AST node.
      *
-     * @param node the ast node
-     * @throws CouldNotInferTypeException thrown when a type could not be inferred
-     * @throws TypeMismatchException      thrown when two types mismatch
+     * @param node the AST node
      */
     public void inferTypes(ASTNode node) {
         node.accept(this);
@@ -250,6 +248,12 @@ public class TypeInferrer implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTScript node) {
         node.getBlock().accept(this);
+        return null;
+    }
+
+    @Override
+    public Void visit(ASTProcCall node) {
+        node.getFuncCall().accept(this);
         return null;
     }
 

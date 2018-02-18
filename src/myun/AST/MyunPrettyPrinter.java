@@ -216,6 +216,11 @@ public class MyunPrettyPrinter implements ASTVisitor<String>, TypeVisitor<String
     }
 
     @Override
+    public String visit(ASTProcCall node) {
+        return node.getFuncCall().accept(this);
+    }
+
+    @Override
     public String visit(ASTVariable node) {
         return node.getName() +
                 "::" + node.getType().accept(this);

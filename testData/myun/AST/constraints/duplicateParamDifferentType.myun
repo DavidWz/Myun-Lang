@@ -1,0 +1,6 @@
+asdas8ad(x::Int, y::Bool, x::Float)
+    return x
+end
+
+script as8da
+end

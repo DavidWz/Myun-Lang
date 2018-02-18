@@ -45,6 +45,7 @@ After that, both can contain letters from a-z (both lower- and upper-case), digi
 A Myun program file consists of arbitrary many [function declarations](#Functions) followed by 
 exactly one [script](#Scripts).
 A script is basically the main method of that compilation unit.
+The script must have a unique name, i.e. no function can have the same name as the script.
 
 Myun does not support linking or referencing to other files yet, so you need to define all necessary
 functions in that one file.
@@ -102,6 +103,9 @@ Statements can either one of the following:
 * [Variable Assignments](Assignments)
 * [Branches](#Branches)
 * [Loops](#Loops)
+* Function Calls
+
+In the case of function calls without assignment, the return value will simply be discarded.
 
 ### <a name="Decls">Variable Declarations</a>
 
@@ -233,9 +237,16 @@ The predefined operator functions are as follows:
 * `negate::Int->Int` (Prefix operator: `-`)
 * `negate::Float->Float` (Prefix operator: `-`)
 
+### IO
+
+There are several pre-defined IO functions.
+
+* `print::Int->Int` Prints a string representation of the given integer to standard out (followed by a new line).
+* `print::Float->Float` Prints a string representation of the given float to standard out (followed by a new line).
+
 ### Types
 
 Currently, Myun only supports three primitive types:
-* `Int` for signed 32 bit integers (e.g. `0`, `5`, `42`)
-* `Float` for 32 bit floating point numbers (e.g. `0.3`, `1.0e2`, `5.2E-12`)
+* `Int` for signed 64 bit integers (e.g. `0`, `5`, `42`)
+* `Float` for 64 bit floating point numbers (e.g. `0.3`, `1.0e2`, `5.2E-12`)
 * `Bool` for booleans (`true` or `false`)
