@@ -1,0 +1,11 @@
+as7dza7seoiaues8(x::Int)::Float
+    if x > 5
+        return 5.0
+    else
+        return -1.2
+    end
+end
+
+script sadasd8
+    lkttaia87ar(5.5) // not declared, should fail
+end

@@ -26,6 +26,7 @@ gen/
 
 # intellij stuff
 .idea/
+*.iml
 
 # artifacts
 out/

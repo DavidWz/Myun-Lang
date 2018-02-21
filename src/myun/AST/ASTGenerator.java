@@ -52,7 +52,7 @@ public class ASTGenerator implements ANTLRErrorListener {
      * @throws IOException                 thrown when the file could not be loaded
      */
     public ASTCompileUnit parseFile(String fileName) throws IOException {
-        CharStream fileStream = new ANTLRFileStream(fileName);
+        CharStream fileStream = CharStreams.fromFileName(fileName);
         return parse(fileStream);
     }
 
@@ -88,11 +88,8 @@ public class ASTGenerator implements ANTLRErrorListener {
     }
 
     @Override
-    public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {
-        throw new ParserException("Expected " +
-                e.getExpectedTokens().toString(MyunParser.VOCABULARY) +
-                " but found \"" + e.getOffendingToken().getText() + '"',
-                getSourcePos(e.getOffendingToken()));
+    public void syntaxError(Recognizer<?, ?> recognizer, Object o, int line, int pos, String s, RecognitionException e) {
+        throw new ParserException(s, new SourcePosition(line, pos));
     }
 
     @Override
@@ -314,9 +311,6 @@ public class ASTGenerator implements ANTLRErrorListener {
                     break;
                 case MyunLexer.OP_DIV:
                     op = "div";
-                    break;
-                case MyunLexer.OP_EXP:
-                    op = "exp";
                     break;
                 case MyunLexer.OP_MOD:
                     op = "mod";

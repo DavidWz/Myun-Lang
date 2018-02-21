@@ -1,0 +1,25 @@
+twice(x::Int)::Int
+    return 2*x
+end
+
+thrice(y::Float)::Float
+    return y*3.0
+end
+
+xor(a::Bool, b::Bool)::Bool
+    return not a is b
+end
+
+script main
+    c := true
+    d := not c
+    v := 2938
+    w := -30.01e+2
+
+    if xor(c, d) then
+        print(twice(v))
+        print(thrice(w))
+    else
+        print(0)
+    end
+end

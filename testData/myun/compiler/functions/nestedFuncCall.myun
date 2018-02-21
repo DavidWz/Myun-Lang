@@ -1,0 +1,24 @@
+sign(x::Float)::Int
+    if x < 0.0 then
+        return -1
+    else
+        return 1
+    end
+end
+
+myMult(x::Float, y::Float)::Float
+    res := x*y
+    if sign(res) is -1 then
+        res = -res
+    end
+    return res
+end
+
+script test
+    x := 5.5
+    y := -2.0
+    myMult(x, y) // is 11.0
+    myMult(y, x) // is 11.0
+    res := myMult(-myMult(x, y), myMult(y, x)) // is 121.0
+    print(res)
+end

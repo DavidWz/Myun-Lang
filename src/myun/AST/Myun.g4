@@ -85,7 +85,6 @@ expr
     | floating                                              # basic
     | variable                                              # basic
     /* Arithmetic Expressions */
-    | <assoc=right> left=expr op=OP_EXP right=expr          # operatorExpr
     | prefix=OP_SUB          expr                           # prefixExpr
     | left=expr op=(OP_MUL | OP_DIV) right=expr             # operatorExpr
     | left=expr op=(OP_ADD | OP_SUB) right=expr             # operatorExpr
@@ -114,7 +113,6 @@ OP_ADD: '+';
 OP_SUB: '-';
 OP_MUL: '*';
 OP_DIV: '/';
-OP_EXP: '^';
 OP_MOD: 'mod';
 
 /* Basic Data Values */

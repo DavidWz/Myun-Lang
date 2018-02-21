@@ -4,10 +4,19 @@ simply because I wanted to try and build a compiler.
 
 # Getting Started
 
-1. Clone this repository
-2. Download and install [ANTLR](http://www.antlr.org/) to generate the parser.
-3. Build the project (you might need to make the antlr jar known to your IDE)
-4. Run the [MyunCompiler](src/myun/compiler/MyunCompiler.java) with the path to your Myun file (`<FileName>.myun`) as the first argument.
+Get the required libraries:
+1. [ANTLR4](http://www.antlr.org/)
+2. LLC from the [LLVM](http://llvm.org/) project (e.g. by installing clang
+   and lldb, version at least 3.7)
+
+Then, install the Myun compiler
+1. Download/Clone this repository
+3. Generate the ANTLR parser from the [Myun grammar file](src/myun/AST/Myun.g4).
+   1. For Intellj: Install the ANTLR plugin
+   2. Right-click on the grammar file and select "Generate ANTLR recognizer"
+   3. Mark the /gen folder as generated sources root
+4. Build the project
+5. Run the [MyunCompiler](src/myun/compiler/MyunCompiler.java) with the path to your Myun file (`<FileName>.myun`) as the first argument.
    This will generate an executable under the same path under `<FileName>.out`.
 
 You can optionally specify the LLVM and Assembly compiler, together with the optimization level in the following arguments.
@@ -223,7 +232,6 @@ The predefined operator functions are as follows:
 * `minus::(Int,Int)->Int` (Infix operator: `-`)
 * `mult::(Int,Int)->Int` (Infix operator: `*`)
 * `div::(Int,Int)->Int` (Infix operator: `/`)
-* `exp::(Int,Int)->Int` (Infix operator: `^`)
 * `mod::(Int,Int)->Int` (Infix operator: `mod`)
 * `is::(Float,Float)->Bool` (Infix operator: `is`)
 * `isLess::(Float,Float)->Bool` (Infix operator: `<`)
@@ -234,7 +242,6 @@ The predefined operator functions are as follows:
 * `minus::(Float,Float)->Float` (Infix operator: `-`)
 * `mult::(Float,Float)->Float` (Infix operator: `*`)
 * `div::(Float,Float)->Float` (Infix operator: `/`)
-* `exp::(Float,Float)->Float` (Infix operator: `^`)
 * `mod::(Float,Float)->Float` (Infix operator: `mod`)
 * `not::Bool->Bool` (Prefix operator: `not`)
 * `negate::Int->Int` (Prefix operator: `-`)

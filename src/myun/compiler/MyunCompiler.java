@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
  * @noinspection UseOfSystemOutOrSystemErr
  */
 final class MyunCompiler {
-    private static final String DEFAULT_LLVM_COMPILER = "llc";
+    private static final String DEFAULT_LLVM_COMPILER = "llc-5.0";
     private static final String DEFAULT_ASSEMBLY_COMPILER = "gcc";
     private static final int DEFAULT_OPT_LEVEL = 0;
 

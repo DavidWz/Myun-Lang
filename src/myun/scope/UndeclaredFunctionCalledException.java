@@ -24,7 +24,7 @@ class UndeclaredFunctionCalledException extends MyunException {
         errorMsg.append("Error: Undeclared function ").append(funcHeader.getName()).append(" of type ");
         errorMsg.append('(');
         for (int i = 0; i < funcHeader.getParameterTypes().size(); i++) {
-            errorMsg.append(funcHeader.getParameterTypes().get(0).accept(prettyPrinter));
+            errorMsg.append(funcHeader.getParameterTypes().get(i).accept(prettyPrinter));
             if (i < (funcHeader.getParameterTypes().size() - 1)) {
                 errorMsg.append(", ");
             }

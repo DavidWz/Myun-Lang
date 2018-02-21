@@ -1,0 +1,27 @@
+myExp(base::Int, e::Int)::Int
+    res := 1
+    for i from 1 to e do
+        res = myMult(res, base)
+    end
+    return res
+end
+
+myMult(x::Int, y::Int)::Int
+    res := 0
+    for i from 1 to y do
+        res = myPlus(res, x)
+    end
+    return res
+end
+
+myPlus(x::Int, y::Int)::Int
+    res := x
+    for i from 1 to y do
+        res = x + 1
+    end
+    return res
+end
+
+script slowExp
+    print(slowExp(3, 3)) // 3^3 = 27
+end

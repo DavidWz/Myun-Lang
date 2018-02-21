@@ -51,7 +51,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
 
         // declare IO functions
         llvmCode.append("@.str = private unnamed_addr constant [6 x i8] c\"%lld\\0A\\00\", align 1\n");
-        llvmCode.append("@.str.1 = private unnamed_addr constant [4 x i8] c\"%f\\0A\\00\", align 1\n");
+        llvmCode.append("@.str.1 = private unnamed_addr constant [7 x i8] c\"%.15e\\0A\\00\", align 1\n");
         // FIXME: convert return type to 64 bit. or better: add support for procedures that don't return anything
         llvmCode.append("declare i32 @printf(i8*, ...)\n\n");
 
@@ -174,6 +174,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
             prevLabel = "else"+labelID;
             node.getElseBlock().accept(this);
         }
+        llvmCode.append("\tbr label %ifCont").append(labelID).append('\n');
 
         // go on with the control flow
         llvmCode.append("ifCont").append(labelID).append(":\n");
@@ -363,6 +364,8 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         // TODO: what if another function is called "main" ?
         // the script is our main function and always returns 0
         llvmCode.append("define ").append(PrimitiveTypes.LLVM_INT).append(" @main() {\n");
+        llvmCode.append("entry:\n");
+        prevLabel = "entry";
         node.getBlock().accept(this);
         llvmCode.append("\tret ").append(PrimitiveTypes.LLVM_INT).append(" 0\n");
         llvmCode.append("}\n");

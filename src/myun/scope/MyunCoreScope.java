@@ -97,10 +97,6 @@ public final class MyunCoreScope extends Scope {
         declareAndSetLLVMOperator("div",
                 binaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT),
                 "sdiv " + PrimitiveTypes.LLVM_INT);
-        // TODO: exp function
-        /*declareAndSetLLVMOperator("exp",
-                binaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT),
-                "???"); */
         declareAndSetLLVMOperator("mod",
                 binaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT),
                 "srem " + PrimitiveTypes.LLVM_INT);
@@ -133,10 +129,6 @@ public final class MyunCoreScope extends Scope {
         declareAndSetLLVMOperator("div",
                 binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT),
                 "fdiv " + PrimitiveTypes.LLVM_FLOAT);
-        // TODO: exp function
-        /*declareAndSetLLVMOperator("exp",
-                binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT),
-                "???"); */
         declareAndSetLLVMOperator("mod",
                 binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT),
                 "frem " + PrimitiveTypes.LLVM_FLOAT);
@@ -150,7 +142,7 @@ public final class MyunCoreScope extends Scope {
                 "mul " + PrimitiveTypes.LLVM_INT + " -1, ");
         declareAndSetLLVMOperator("negate",
                 unaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT),
-                "fmul " + PrimitiveTypes.LLVM_INT + " -1.0, ");
+                "fmul " + PrimitiveTypes.LLVM_FLOAT + " -1.0, ");
     }
 
     private void declareIO() {
@@ -162,7 +154,7 @@ public final class MyunCoreScope extends Scope {
                 new LLVMInstruction(printfInt, true, true));
 
         String printfFloat = "call i32 (i8*, ...) @printf(i8* getelementptr inbounds " +
-                "([4 x i8], [4 x i8]* @.str.1, i32 0, i32 0),";
+                "([7 x i8], [7 x i8]* @.str.1, i32 0, i32 0),";
         declareAndSetLLVM("print",
                 unaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT),
                 new LLVMInstruction(printfFloat, true, true));
