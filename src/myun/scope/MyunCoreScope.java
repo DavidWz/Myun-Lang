@@ -135,7 +135,7 @@ public final class MyunCoreScope extends Scope {
 
         declareAndSetLLVMOperator("not",
                 unaryFunction(PrimitiveTypes.MYUN_BOOL, PrimitiveTypes.MYUN_BOOL),
-                "xor i1 0, ");
+                "xor i1 1, ");
 
         declareAndSetLLVMOperator("negate",
                 unaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT),

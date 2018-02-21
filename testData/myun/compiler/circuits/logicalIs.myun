@@ -1,0 +1,30 @@
+script testIs
+    a := true is true
+    b := true is false
+    c := false is true
+    d := false is false
+
+    if a then
+        print(1)
+    else
+        print(0)
+    end
+
+    if b then
+        print(1)
+    else
+        print(0)
+    end
+
+    if c then
+        print(1)
+    else
+        print(0)
+    end
+
+    if d then
+        print(1)
+    else
+        print(0)
+    end
+end

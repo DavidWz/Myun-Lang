@@ -1,0 +1,16 @@
+script testNot
+    a := not true
+    b := not false
+
+    if a then
+        print(1)
+    else
+        print(0)
+    end
+
+    if b then
+        print(1)
+    else
+        print(0)
+    end
+end

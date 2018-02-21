@@ -7,7 +7,9 @@ import myun.scope.MyunCoreScope;
 import myun.scope.TypeNotInferredException;
 import myun.type.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -32,6 +34,9 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
 
     // stores the actual llvm code
     private StringBuilder llvmCode;
+
+    // stores a mapping of iteration variables to current registers
+    private Map<String, String> itVarMap;
 
     /**
      * Creates a new Myun to LLVM translator.
@@ -67,6 +72,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         nextRegister = 0;
         nextLabelID = 0;
         prevLabel = "entry"; // functions always start with an entry label
+        itVarMap = new HashMap<>();
     }
 
     /**
@@ -103,6 +109,17 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         }
 
         return val;
+    }
+
+    /**
+     * Gets a new register name, and assigns the mapping of the given iteration variable to that register.
+     * @param itVar the iteration variable (for-loops)
+     * @return the corresponding register
+     */
+    private String getNewRegisterForItVar(ASTVariable itVar) {
+        String newReg = getNextRegister();
+        itVarMap.put(itVar.getName(), newReg);
+        return newReg;
     }
 
     @Override
@@ -216,7 +233,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
     @Override
     public String visit(ASTForLoop node) {
         String nextIt = getNextRegister();
-        String itVar = node.getVariable().accept(this);
+        String itVar = getNewRegisterForItVar(node.getVariable());
         String itType = node.getVariable().getType().accept(this);
         int labelID = getNextLabelID();
 
@@ -230,7 +247,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         // generate the phi instruction for our iteration variable
         llvmCode.append('\t').append(itVar).append(" = phi ").append(itType);
         llvmCode.append(" [").append(fromVal).append(", %").append(prevLabel).append("],");
-        llvmCode.append(" [").append(nextIt).append(", %loopBody").append(labelID).append("]\n");
+        llvmCode.append(" [").append(nextIt).append(", %loopIncr").append(labelID).append("]\n");
 
         // check if i reached the to-value yet
         String toVal = getConstantOrRegister(node.getTo());
@@ -249,6 +266,8 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         node.getBlock().accept(this);
 
         // increment the iteration variable
+        llvmCode.append("\tbr label %loopIncr").append(labelID).append('\n');
+        llvmCode.append("loopIncr").append(labelID).append(":\n");
         llvmCode.append('\t').append(nextIt).append(" = add ").append(PrimitiveTypes.LLVM_INT).append(" 1, ").append
                 (itVar).append('\n');
         llvmCode.append("\tbr label %loop").append(labelID).append('\n');
@@ -391,8 +410,14 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
             String type = node.getType().accept(this);
             return "load " + type + ", " +  type + "* %" + node.getName();
         }
+        else if (itVarMap.containsKey(node.getName())) {
+            // for unmutable register we need to be careful about iteration variables
+            // since they can be used several times in different for-loops
+            // so we have to return the mapped name, if there is one
+            return itVarMap.get(node.getName());
+        }
         else {
-            // for unmutable variables we can simply take the register where they are stored
+            // for other unmutable variables we can simply take the register where they are stored
             return '%' +node.getName();
         }
     }

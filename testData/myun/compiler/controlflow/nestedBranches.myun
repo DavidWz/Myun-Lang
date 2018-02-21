@@ -1,0 +1,35 @@
+script nestedBranches
+    print(0)
+    if false then
+        print(1)
+        if false then
+            print(11)
+        else
+            print(12)
+        end
+        print(13)
+    elseif true then
+        print(2)
+        if false then
+            print(21)
+        elseif false then
+            print(22)
+        elseif true then
+            print(23)
+        else
+            print(24)
+        end
+        print(25)
+    elseif true then
+        print(3)
+        if true then
+            print(31)
+        elseif true then
+            print(32)
+        else
+            print(33)
+        end
+    end
+    print(4)
+    // 0, 2, 23, 25, 4
+end

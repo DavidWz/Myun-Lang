@@ -1,0 +1,30 @@
+script testAnd
+    a := true and true
+    b := true and false
+    c := false and true
+    d := false and false
+
+    if a then
+        print(1)
+    else
+        print(0)
+    end
+
+    if b then
+        print(1)
+    else
+        print(0)
+    end
+
+    if c then
+        print(1)
+    else
+        print(0)
+    end
+
+    if d then
+        print(1)
+    else
+        print(0)
+    end
+end
