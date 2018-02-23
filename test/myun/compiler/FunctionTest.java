@@ -85,11 +85,11 @@ public class FunctionTest {
         String outputFile = compiler.compileFromFile(resPath+"simpleOverloading.myun");
         String[] lines = CodeRunner.executeAndGetOutput(outputFile);
 
-        int resInt = Integer.parseInt(lines[0]);
-        double resFloat = Double.parseDouble(lines[1]);
+        double resFloat = Double.parseDouble(lines[0]);
+        int resInt = Integer.parseInt(lines[1]);
 
         assertThat("There should be two output lines.", 2, is(lines.length));
-        assertEquals("First output should be int 5050", 5050, resInt);
-        assertEquals("Second output should be float 5050.0", -5050.0, resFloat, 1e-8);
+        assertEquals("First output should be float 5050.0", 5050.0, resFloat, 1e-8);
+        assertEquals("Second output should be int 5050", 5050, resInt);
     }
 }

@@ -30,10 +30,7 @@ public class FuncType implements MyunType {
 
     @Override
     public boolean isFullyKnown() {
-        if (!returnType.isFullyKnown()) {
-            return false;
-        }
-        return parameterTypes.stream().allMatch(MyunType::isFullyKnown);
+        return returnType.isFullyKnown() && parameterTypes.stream().allMatch(MyunType::isFullyKnown);
     }
 
     @Override
@@ -52,10 +49,7 @@ public class FuncType implements MyunType {
 
         FuncType funcType = (FuncType) o;
 
-        if (!parameterTypes.equals(funcType.parameterTypes)) {
-            return false;
-        }
-        return returnType.equals(funcType.returnType);
+        return parameterTypes.equals(funcType.parameterTypes) && returnType.equals(funcType.returnType);
 
     }
 

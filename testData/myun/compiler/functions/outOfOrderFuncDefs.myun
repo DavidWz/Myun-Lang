@@ -17,11 +17,11 @@ end
 myPlus(x::Int, y::Int)::Int
     res := x
     for i from 1 to y do
-        res = x + 1
+        res = res + 1
     end
     return res
 end
 
 script slowExp
-    print(slowExp(3, 3)) // 3^3 = 27
+    print(myExp(3, 3)) // 3^3 = 27
 end

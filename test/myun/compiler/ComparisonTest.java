@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.fail;
 
 /**
  * Tests comparison operators.

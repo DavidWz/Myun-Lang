@@ -118,7 +118,13 @@ public class TypeInferrer implements ASTVisitor<Void> {
 
     @Override
     public Void visit(ASTCompileUnit node) {
+        // first declare every function, so that we can call functions that will be declared after the call
+        node.getFuncDefs().forEach(this::declareFunction);
+
+        // then handle the actual definition with body
         node.getFuncDefs().forEach(funcDef -> funcDef.accept(this));
+
+        // finally, handle the main script
         node.getScript().accept(this);
         return null;
     }
@@ -198,8 +204,11 @@ public class TypeInferrer implements ASTVisitor<Void> {
         return null;
     }
 
-    @Override
-    public Void visit(ASTFuncDef node) {
+    /**
+     * Declares the function and makes its type known to the global scope.
+     * @param node the function definition
+     */
+    private void declareFunction(ASTFuncDef node) {
         // we cannot infer the return type of the function yet
         if (!node.getReturnType().isFullyKnown()) {
             throw new NotImplementedException("return type inference", node.getSourcePosition());
@@ -224,6 +233,12 @@ public class TypeInferrer implements ASTVisitor<Void> {
 
         // declare this function
         node.getScope().declareFunction(funcHeader, node);
+    }
+
+    @Override
+    public Void visit(ASTFuncDef node) {
+        // the function header has been defined already in the compilation unit
+        // so that we can support out-of-order function definitions
 
         // do type inference in the function body
         node.getBlock().accept(this);

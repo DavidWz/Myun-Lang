@@ -38,6 +38,10 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
     // stores the label of the current loop exit
     private Stack<String> currentLoopExit;
 
+    // stores a mapping of function headers to actual llvm functions
+    private int nextFuncID;
+    private Map<FuncHeader, String> funcNames;
+
     /**
      * Creates a new Myun to LLVM translator.
      */
@@ -57,7 +61,8 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         // declare IO functions
         llvmCode.append("@.str = private unnamed_addr constant [6 x i8] c\"%lld\\0A\\00\", align 1\n");
         llvmCode.append("@.str.1 = private unnamed_addr constant [7 x i8] c\"%.15e\\0A\\00\", align 1\n");
-        // FIXME: convert return type to 64 bit. or better: add support for procedures that don't return anything
+        // FIXME: add support for procedures that don't return anything and make print a procedure
+        // TODO: import statements? so that this header does not get included every time
         llvmCode.append("declare i32 @printf(i8*, ...)\n\n");
 
         myunProgram.accept(this);
@@ -74,6 +79,8 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         prevLabel = "entry"; // functions always start with an entry label
         itVarMap = new HashMap<>();
         currentLoopExit = new Stack<>();
+        nextFuncID = 0;
+        funcNames = new HashMap<>();
     }
 
     /**
@@ -81,8 +88,9 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
      */
     private String getNextRegister() {
         nextRegister++;
-        // TODO: what if the program contains variables called "tmp"?
-        return "%tmp" + nextRegister;
+        // we begin temporary register names with an underscore, because myun does not allow variables to start with an
+        // underscore, so there will never be any name collisions
+        return "%_" + nextRegister;
     }
 
     /**
@@ -121,6 +129,27 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         String newReg = getNextRegister();
         itVarMap.put(itVar.getName(), newReg);
         return newReg;
+    }
+
+    /**
+     * Retrieves the name of the actual LLVM function for that specific function header.
+     * If none has been assigned yet, a new one will be created.
+     *
+     * @param header the function header
+     * @return a unique name
+     */
+    private String getNameForFunction(FuncHeader header) {
+        if (funcNames.containsKey(header)) {
+            return funcNames.get(header);
+        }
+        else {
+            nextFuncID++;
+            // we begin actual function names with an underscore, because myun does not allow
+            // function names to start with an underscore, so there will never be any name collisions
+            String realName = "_"+header.getName()+nextFuncID;
+            funcNames.put(header, realName);
+            return realName;
+        }
     }
 
     @Override
@@ -298,7 +327,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         if (llvmInstruction.isPresent()) {
             callBuilder.append(llvmInstruction.get().getInstruction()).append(' ');
         } else {
-            callBuilder.append("call ").append(retType.accept(this)).append(" @").append(node.getFunction()).append('(');
+            callBuilder.append("call ").append(retType.accept(this)).append(" @").append(getNameForFunction(header)).append('(');
         }
 
         // go through the function arguments and create code to evaluate the expressions
@@ -331,10 +360,12 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
 
     @Override
     public String visit(ASTFuncDef node) {
+        FuncHeader header = new FuncHeader(node.getName(),
+                node.getParameters().stream().map(ASTExpression::getType).collect(Collectors.toList()));
+
         // function definition
         MyunType returnType = node.getReturnType();
-        // FIXME: doesn't support overloaded functions (TODO: add suffix for types, and map func headers to those new names)
-        llvmCode.append("define ").append(returnType.accept(this)).append(" @").append(node.getName());
+        llvmCode.append("define ").append(returnType.accept(this)).append(" @").append(getNameForFunction(header));
 
         // params
         llvmCode.append('(');
@@ -386,7 +417,6 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
 
     @Override
     public String visit(ASTScript node) {
-        // TODO: what if another function is called "main" ?
         // the script is our main function and always returns 0
         llvmCode.append("define ").append(PrimitiveTypes.LLVM_INT).append(" @main() {\n");
         llvmCode.append("entry:\n");
