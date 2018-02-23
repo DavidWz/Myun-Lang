@@ -7,10 +7,7 @@ import myun.scope.MyunCoreScope;
 import myun.scope.TypeNotInferredException;
 import myun.type.*;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -37,6 +34,9 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
 
     // stores a mapping of iteration variables to current registers
     private Map<String, String> itVarMap;
+
+    // stores the label of the current loop exit
+    private Stack<String> currentLoopExit;
 
     /**
      * Creates a new Myun to LLVM translator.
@@ -73,6 +73,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         nextLabelID = 0;
         prevLabel = "entry"; // functions always start with an entry label
         itVarMap = new HashMap<>();
+        currentLoopExit = new Stack<>();
     }
 
     /**
@@ -163,32 +164,35 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
 
     @Override
     public String visit(ASTBranch node) {
-        if (node.getConditions().size() != 1) {
-            // TODO: implement me!
-            throw new NotImplementedException("elseif", node.getSourcePosition());
-        }
-
         // suffix for the labels unique for this branch
         int labelID = getNextLabelID();
 
-        // evaluate the if condition
-        String ifCond = getConstantOrRegister(node.getConditions().get(0));
+        llvmCode.append("\tbr label %if").append(labelID).append("_0\n");
+        for (int i = 0; i < node.getConditions().size(); i++) {
+            String suffix = labelID + "_" + i;
+            String nextSuffix = labelID + "_" + (i+1);
 
-        // compare then jump
-        llvmCode.append("\tbr i1 ").append(ifCond);
-        llvmCode.append(", label %then").append(labelID);
-        llvmCode.append(", label %else").append(labelID).append('\n');
+            // evaluate the if condition
+            llvmCode.append("if").append(suffix).append(":\n");
+            String ifCond = getConstantOrRegister(node.getConditions().get(i));
 
-        // if-block
-        llvmCode.append("then").append(labelID).append(":\n");
-        prevLabel = "then"+labelID;
-        node.getBlocks().get(0).accept(this);
-        llvmCode.append("\tbr label %ifCont").append(labelID).append('\n');
+            // compare then jump
+            llvmCode.append("\tbr i1 ").append(ifCond);
+            llvmCode.append(", label %then").append(suffix);
+            llvmCode.append(", label %if").append(nextSuffix).append('\n');
+
+            // block of the current branch
+            llvmCode.append("then").append(suffix).append(":\n");
+            prevLabel = "then"+suffix;
+            node.getBlocks().get(i).accept(this);
+            llvmCode.append("\tbr label %ifCont").append(labelID).append('\n');
+        }
+        String elseSuffix = labelID + "_" + node.getConditions().size();
 
         // else-block
-        llvmCode.append("else").append(labelID).append(":\n");
+        llvmCode.append("if").append(elseSuffix).append(":\n");
         if (node.hasElse()) {
-            prevLabel = "else"+labelID;
+            prevLabel = "if"+elseSuffix;
             node.getElseBlock().accept(this);
         }
         llvmCode.append("\tbr label %ifCont").append(labelID).append('\n');
@@ -263,6 +267,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         // loop body
         llvmCode.append("loopBody").append(labelID).append(":\n");
         prevLabel = "loopBody"+labelID;
+        currentLoopExit.push("loopCont"+labelID);
         node.getBlock().accept(this);
 
         // increment the iteration variable
@@ -275,6 +280,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         // loop end
         llvmCode.append("loopCont").append(labelID).append(":\n");
         prevLabel = "loopCont" + labelID;
+        currentLoopExit.pop();
 
         return null;
     }
@@ -374,8 +380,8 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
 
     @Override
     public String visit(ASTLoopBreak node) {
-        // TODO: implement me! (new attribute: loopExit stores label)
-        throw new NotImplementedException("loop breaks", node.getSourcePosition());
+        llvmCode.append("\tbr label %").append(currentLoopExit.peek()).append('\n');
+        return null;
     }
 
     @Override
@@ -435,7 +441,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         String cmpResult = getNextRegister();
 
         llvmCode.append('\t').append(cmpResult).append(" = icmp eq ").append(PrimitiveTypes.LLVM_BOOL);
-        llvmCode.append(" 1, ").append(condVal).append('\n');
+        llvmCode.append(" true, ").append(condVal).append('\n');
 
         // jump out of loop when condition reached
         llvmCode.append("\tbr i1 ").append(cmpResult);
@@ -445,12 +451,14 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         // loop body
         llvmCode.append("loopBody").append(labelID).append(":\n");
         prevLabel = "loopBody"+labelID;
+        currentLoopExit.push("loopCont"+labelID);
         node.getBlock().accept(this);
         llvmCode.append("\tbr label %loop").append(labelID).append('\n');
 
         // loop end
         llvmCode.append("loopCont").append(labelID).append(":\n");
         prevLabel = "loopCont" + labelID;
+        currentLoopExit.pop();
 
         return null;
     }

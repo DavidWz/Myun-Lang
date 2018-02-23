@@ -1,0 +1,39 @@
+script lEq
+    // ints: 12, 21, 32
+    if -4981 > 9642 then
+        print(11)
+    else
+        print(12)
+    end
+
+    if 392 > 391 then
+        print(21)
+    else
+        print(22)
+    end
+
+    if 48 > 48 then
+        print(31)
+    else
+        print(32)
+    end
+
+    // floats: 42, 51, 62
+    if 130.10 > 471.96e0 then
+        print(41)
+    else
+        print(42)
+    end
+
+    if -4.102 > -30.1 then
+        print(51)
+    else
+        print(52)
+    end
+
+    if 40.3 > 40.3 then
+        print(61)
+    else
+        print(62)
+    end
+end

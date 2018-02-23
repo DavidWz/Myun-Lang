@@ -1,0 +1,19 @@
+script ifElse
+    print(31)
+    if true then
+        print(32)
+    else
+        print(33)
+    end
+    print(34)
+    // 31, 32, 34
+
+    print(41)
+    if false then
+        print(42)
+    else
+        print(43)
+    end
+    print(44)
+    // 41, 43, 44
+end

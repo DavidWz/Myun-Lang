@@ -135,7 +135,7 @@ public final class MyunCoreScope extends Scope {
 
         declareAndSetLLVMOperator("not",
                 unaryFunction(PrimitiveTypes.MYUN_BOOL, PrimitiveTypes.MYUN_BOOL),
-                "xor i1 1, ");
+                "xor i1 true, ");
 
         declareAndSetLLVMOperator("negate",
                 unaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT),
@@ -156,7 +156,7 @@ public final class MyunCoreScope extends Scope {
         String printfFloat = "call i32 (i8*, ...) @printf(i8* getelementptr inbounds " +
                 "([7 x i8], [7 x i8]* @.str.1, i32 0, i32 0),";
         declareAndSetLLVM("print",
-                unaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT),
+                unaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_INT),
                 new LLVMInstruction(printfFloat, true, true));
     }
 

@@ -1,0 +1,13 @@
+bar(x::Float)::Float
+    if 4 > 5 then
+        print(5)
+    else
+        break
+    end
+
+    return 0.0
+end
+
+script moo
+    bar(5.0)
+end

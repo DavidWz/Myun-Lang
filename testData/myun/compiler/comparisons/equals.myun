@@ -1,0 +1,27 @@
+script lEq
+    // ints: 11, 22
+    if 5 is 5 then
+        print(11)
+    else
+        print(12)
+    end
+
+    if -6 is 2 then
+        print(21)
+    else
+        print(22)
+    end
+
+    // floats: 32, 41
+    if 6.10 is 3810.4e2 then
+        print(31)
+    else
+        print(32)
+    end
+
+    if -402.9e-4 is -402.9e-4 then
+        print(41)
+    else
+        print(42)
+    end
+end

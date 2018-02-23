@@ -1,0 +1,13 @@
+script sameItvar
+    x := 0
+    for i from 1 to 5 do
+        x = x + i
+    end
+    print(x) // 15
+
+    for i from 7 to 7 do
+        print(i)
+    end
+    print(12)
+    // 7, 12
+end

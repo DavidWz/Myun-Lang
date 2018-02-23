@@ -1,0 +1,27 @@
+script testElseif
+    print(51)
+    if false then
+        print(52)
+    elseif false then
+        print(53)
+    elseif true then
+        print(54)
+    elseif false then
+        print(55)
+    elseif true then
+        print(56)
+    else
+        print(57)
+    end
+    print(58)
+    // 51, 54, 58
+
+    print(61)
+    if false then
+        print(62)
+    elseif true then
+        print(63)
+    end
+    print(64)
+    // 61, 63, 64
+end

@@ -1,0 +1,14 @@
+script testFor
+    x := 0
+    for i from 1 to 11 do
+        x = x + i
+    end
+    print(x) // 66
+
+    print(7)
+    for adu3a from 5 to 0 do
+        print(49128)
+    end
+    print(8)
+    // 7, 8
+end

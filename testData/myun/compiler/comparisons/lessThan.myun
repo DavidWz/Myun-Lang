@@ -1,0 +1,39 @@
+script lT
+    // ints: 11, 22, 32
+    if -6 < 2 then
+        print(11)
+    else
+        print(12)
+    end
+
+    if 5 < 3 then
+        print(21)
+    else
+        print(22)
+    end
+
+    if 43827 < 43827 then
+        print(31)
+    else
+        print(32)
+    end
+
+    // floats: 41, 52, 62
+    if 5.201 < 6.3e12 then
+        print(41)
+    else
+        print(42)
+    end
+
+    if 482.1002 < -5.0e-3 then
+        print(51)
+    else
+        print(52)
+    end
+
+    if 0.0 < 0.0 then
+        print(61)
+    else
+        print(62)
+    end
+end

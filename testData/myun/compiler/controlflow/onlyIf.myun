@@ -1,0 +1,15 @@
+script testIf
+    print(11)
+    if true then
+        print(12)
+    end
+    print(13)
+    // 11, 12, 13
+    
+    print(21)
+    if false then
+        print(22)
+    end
+    print(23)
+    // 21, 23
+end

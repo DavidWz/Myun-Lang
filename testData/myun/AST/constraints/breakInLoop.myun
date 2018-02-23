@@ -1,0 +1,29 @@
+foo()::Int
+    while true do
+        x := 0
+        break
+    end
+
+    for i from 1 to 100 do
+        while false do
+            break
+        end
+        break
+    end
+
+    return 3
+end
+
+script test
+    while true do
+        nothing := 0
+    end
+
+    while false do
+        if 2 > 3 then
+            break
+        else
+            x := 3
+        end
+    end
+end

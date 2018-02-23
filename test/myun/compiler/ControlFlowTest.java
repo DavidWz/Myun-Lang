@@ -7,7 +7,6 @@ import java.io.File;
 import java.io.IOException;
 
 import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.fail;
 
 /**
  * Tests control flow structures in Myun.
@@ -24,17 +23,33 @@ public class ControlFlowTest {
     }
 
     @Test
-    public void testBranches() throws IOException, InterruptedException {
-        String outputFile = compiler.compileFromFile(resPath + "branches.myun");
+    public void testOnlyIf() throws IOException, InterruptedException {
+        String outputFile = compiler.compileFromFile(resPath + "onlyIf.myun");
         String[] lines = CodeRunner.executeAndGetOutput(outputFile);
 
         String[] expected = {"11", "12", "13",
-                "21", "23",
-                "31", "32", "33",
-                "41", "43", "44",
-                "51", "54", "58",
-                "61", "63"};
-        assertArrayEquals("Correct branch paths taken.", expected, lines);
+                "21", "23"};
+        assertArrayEquals("Correct branch paths taken for simple if branches.", expected, lines);
+    }
+
+    @Test
+    public void testIfElse() throws IOException, InterruptedException {
+        String outputFile = compiler.compileFromFile(resPath + "ifElse.myun");
+        String[] lines = CodeRunner.executeAndGetOutput(outputFile);
+
+        String[] expected = {"31", "32", "34",
+                "41", "43", "44"};
+        assertArrayEquals("Correct branch paths taken for if-else branches.", expected, lines);
+    }
+
+    @Test
+    public void testIfElseifElses() throws IOException, InterruptedException {
+        String outputFile = compiler.compileFromFile(resPath + "elseIf.myun");
+        String[] lines = CodeRunner.executeAndGetOutput(outputFile);
+
+        String[] expected = {"51", "54", "58",
+                "61", "63", "64"};
+        assertArrayEquals("Correct branch paths taken for if-elseif-else branches.", expected, lines);
     }
 
     @Test
@@ -51,16 +66,63 @@ public class ControlFlowTest {
         String outputFile = compiler.compileFromFile(resPath + "whileLoops.myun");
         String[] lines = CodeRunner.executeAndGetOutput(outputFile);
 
-        String[] expected = {"1", "3", "3", "55", "9", "8", "7", "6"};
+        String[] expected = {"1", "3", "3"};
         assertArrayEquals("While body correct amount of times executed.", expected, lines);
     }
 
     @Test
-    public void testForLoops() throws IOException, InterruptedException {
-        String outputFile = compiler.compileFromFile(resPath + "forLoops.myun");
+    public void testNestedWhileLoops() throws IOException, InterruptedException {
+        String outputFile = compiler.compileFromFile(resPath + "nestedWhile.myun");
         String[] lines = CodeRunner.executeAndGetOutput(outputFile);
 
-        String[] expected = {"66", "7", "8", "7", "12", "218"};
+        String[] expected = {"55"};
+        assertArrayEquals("While body correct amount of times executed.", expected, lines);
+    }
+
+    @Test
+    public void testSimpleForLoops() throws IOException, InterruptedException {
+        String outputFile = compiler.compileFromFile(resPath + "simpleForLoop.myun");
+        String[] lines = CodeRunner.executeAndGetOutput(outputFile);
+
+        String[] expected = {"66", "7", "8"};
         assertArrayEquals("For body correct amount of times executed.", expected, lines);
+    }
+
+    @Test
+    public void testForLoopSameItVar() throws IOException, InterruptedException {
+        String outputFile = compiler.compileFromFile(resPath + "forSameItVar.myun");
+        String[] lines = CodeRunner.executeAndGetOutput(outputFile);
+
+        String[] expected = {"15", "7", "12"};
+        assertArrayEquals("For loops with same it vars in different scopes should compile.", expected, lines);
+    }
+
+    @Test
+    public void testNestedFor() throws IOException, InterruptedException {
+        String outputFile = compiler.compileFromFile(resPath + "nestedFor.myun");
+        String[] lines = CodeRunner.executeAndGetOutput(outputFile);
+
+        String[] expected = {"218"};
+        assertArrayEquals("Nested for loops should compile.", expected, lines);
+    }
+
+    @Test
+    public void testSimpleBreaks() throws IOException, InterruptedException {
+        String outputFile = compiler.compileFromFile(resPath + "simpleBreaks.myun");
+        String[] lines = CodeRunner.executeAndGetOutput(outputFile);
+
+        String[] expected = {"1", "3", "2", "5", "6", "7", "8"};
+        assertArrayEquals("Breaks should work.", expected, lines);
+    }
+
+    @Test
+    public void testNestedBreaks() throws IOException, InterruptedException {
+        String outputFile = compiler.compileFromFile(resPath + "nestedBreaks.myun");
+        String[] lines = CodeRunner.executeAndGetOutput(outputFile);
+
+        String[] expected = {"7", "6", "5", "10", "5", "9",
+            "1", "2", "1", "3", "1", "2", "4", "1", "2", "3", "5", "1", "2", "3", "4",
+            "1", "2", "3"};
+        assertArrayEquals("Breaks in nested loops should work.", expected, lines);
     }
 }

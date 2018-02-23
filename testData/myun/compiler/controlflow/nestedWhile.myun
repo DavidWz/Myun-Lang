@@ -1,0 +1,13 @@
+script nestedWhile
+    a := 10
+    c := 0
+    while a > 0 do
+        b := a
+        while b > 0 do
+            c = c + 1
+            b = b - 1
+        end
+        a = a-1
+    end
+    print(c) // 55
+end
