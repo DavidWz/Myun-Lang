@@ -1,0 +1,36 @@
+// inc::Int->Int
+inc(x)
+    return x+1
+end
+
+// approx::Float->Int
+approx(x)
+    i := 0
+    f := 0.0
+    while f < x do
+        f = f + 1.0
+        i = i + 1
+    end
+    return i
+end
+
+// approx::Int->Float
+approx(x)
+    i := 0
+    f := 0.0
+    while i < x do
+        f = f + 1.0
+        i = i + 1
+    end
+    return f
+end
+
+// inc::Float->Float
+inc(x)
+    return approx(inc(approx(x)))
+end
+
+script test
+    print(inc(5))    // 6
+    print(inc(32.0)) // 33.0
+end

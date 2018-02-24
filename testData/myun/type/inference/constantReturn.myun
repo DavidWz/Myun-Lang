@@ -1,0 +1,18 @@
+// foo::Int->Int
+foo(x)
+    return x+5
+end
+
+// bar::(Float, Float)->Float
+bar(x, y)
+    return x+y+1.0
+end
+
+// fizz::()->Bool
+fizz()
+    return true
+end
+
+script test
+    print(foo(2))
+end

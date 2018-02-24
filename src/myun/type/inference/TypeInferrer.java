@@ -28,7 +28,7 @@ public class TypeInferrer implements ASTVisitor<Void> {
      * @param javaName the name of the java type
      * @return the name of the myun type
      */
-    private static String javaTypeToMyunType(String javaName) {
+    private static MyunType javaTypeToMyunType(String javaName) {
         switch (javaName) {
             case "Integer":
                 return PrimitiveTypes.MYUN_INT;
@@ -103,7 +103,7 @@ public class TypeInferrer implements ASTVisitor<Void> {
         node.getConditions().forEach(cond -> {
             cond.accept(this);
             ensureFullyKnownType(cond);
-            BasicType boolType = new BasicType(PrimitiveTypes.MYUN_BOOL);
+            BasicType boolType = PrimitiveTypes.MYUN_BOOL;
             MyunType condType = cond.getType();
             if (!boolType.equals(condType)) {
                 throw new TypeMismatchException(condType, boolType, cond.getSourcePosition());
@@ -132,8 +132,8 @@ public class TypeInferrer implements ASTVisitor<Void> {
     @Override
     public <CT> Void visit(ASTConstant<CT> node) {
         // convert java class types to Myun type names
-        String typeName = javaTypeToMyunType(node.getValue().getClass().getSimpleName());
-        node.setType(new BasicType(typeName));
+        MyunType type = javaTypeToMyunType(node.getValue().getClass().getSimpleName());
+        node.setType(type);
         return null;
     }
 
@@ -168,7 +168,7 @@ public class TypeInferrer implements ASTVisitor<Void> {
         }
 
         // define that variable in the scope
-        BasicType intType = new BasicType(PrimitiveTypes.MYUN_INT);
+        BasicType intType = PrimitiveTypes.MYUN_INT;
         itVar.getScope().declareVariable(itVar, new VariableInfo(intType, false, node));
 
         // make sure from and to expressions are of type int

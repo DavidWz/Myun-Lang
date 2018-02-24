@@ -169,13 +169,13 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
     @Override
     public String visit(BasicType node) {
         String name = node.getName();
-        if (PrimitiveTypes.MYUN_BOOL.equals(name)) {
+        if (PrimitiveTypes.MYUN_BOOL_NAME.equals(name)) {
             return PrimitiveTypes.LLVM_BOOL;
         }
-        if (PrimitiveTypes.MYUN_INT.equals(name)) {
+        if (PrimitiveTypes.MYUN_INT_NAME.equals(name)) {
             return PrimitiveTypes.LLVM_INT;
         }
-        if (PrimitiveTypes.MYUN_FLOAT.equals(name)) {
+        if (PrimitiveTypes.MYUN_FLOAT_NAME.equals(name)) {
             return PrimitiveTypes.LLVM_FLOAT;
         }
 
@@ -220,13 +220,11 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
 
         // else-block
         llvmCode.append("if").append(elseSuffix).append(":\n");
-        if (node.hasElse()) {
-            prevLabel = "if"+elseSuffix;
-            node.getElseBlock().accept(this);
-        }
-        llvmCode.append("\tbr label %ifCont").append(labelID).append('\n');
+        prevLabel = "if"+elseSuffix;
+        node.getElseBlock().ifPresent(b -> b.accept(this));
 
         // go on with the control flow
+        llvmCode.append("\tbr label %ifCont").append(labelID).append('\n');
         llvmCode.append("ifCont").append(labelID).append(":\n");
         prevLabel = "ifCont" + labelID;
 

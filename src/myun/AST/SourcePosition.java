@@ -26,7 +26,7 @@ public class SourcePosition {
     }
 
     private boolean isKnownPosition() {
-        return (line > 0) && (position > 0);
+        return (line > 0) && (position >= 0);
     }
 
     @Override

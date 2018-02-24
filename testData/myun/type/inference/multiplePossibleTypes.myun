@@ -1,0 +1,15 @@
+// identity::T->T
+identity(x)
+    return x
+end
+
+// myAdd::(T,T)->T where T=Int or Float
+myAdd(x, y)
+    return x+y
+end
+
+script test
+    print(identity(false))
+    print(myAdd(1, 2))
+    print(myAdd(4.2, 10.2))
+end

@@ -35,7 +35,7 @@ public class AssignmentTypeSafetyTest {
     }
 
     @Test
-    public void simpleAssignmentWithSameTypesSucceeds() throws IOException {
+    public void constantAssignmentWithSameTypesSucceeds() throws IOException {
         ASTCompileUnit program = generator.parseFile(resPath+"simpleConstantAssignments.myun");
         ScopeInitializer.initScopes(program, MyunCoreScope.getInstance());
         TypeInferrer typeInferrer = new TypeInferrer();
@@ -44,13 +44,40 @@ public class AssignmentTypeSafetyTest {
         for (int i = 1; i <= 3; i++) {
             VariableInfo varInfo = program.getScript().getBlock().getScope().getVarInfo(new ASTVariable(new SourcePosition(), "var"+i));
             assertThat("Type of var"+i+" should be a basic type", varInfo.getType(), is(instanceOf(BasicType.class)));
-            assertEquals("Type of var"+i+" should Int", PrimitiveTypes.MYUN_INT, ((BasicType) varInfo.getType()).getName());
+            assertEquals("Type of var"+i+" should Int", PrimitiveTypes.MYUN_INT_NAME, ((BasicType) varInfo.getType()).getName());
         }
     }
 
     @Test(expected = TypeMismatchException.class)
-    public void simpleAssignmentWithDifferentTypesFails() throws IOException {
+    public void constantAssignmentWithDifferentTypesFails() throws IOException {
         ASTCompileUnit program = generator.parseFile(resPath+"mistypedConstantAssignments.myun");
+        ScopeInitializer.initScopes(program, MyunCoreScope.getInstance());
+        TypeInferrer typeInferrer = new TypeInferrer();
+        typeInferrer.inferTypes(program);
+    }
+
+    @Test
+    public void funcCallAssignmentWithSameTypesSucceeds() throws IOException {
+        ASTCompileUnit program = generator.parseFile(resPath+"funcCallAssignments.myun");
+        ScopeInitializer.initScopes(program, MyunCoreScope.getInstance());
+        TypeInferrer typeInferrer = new TypeInferrer();
+        typeInferrer.inferTypes(program);
+
+        String[] expected = {PrimitiveTypes.MYUN_INT_NAME,
+                PrimitiveTypes.MYUN_FLOAT_NAME,
+                PrimitiveTypes.MYUN_FLOAT_NAME,
+                PrimitiveTypes.MYUN_INT_NAME};
+
+        for (int i = 0; i < 4; i++) {
+            VariableInfo varInfo = program.getScript().getBlock().getScope().getVarInfo(new ASTVariable(new SourcePosition(), "var"+i));
+            assertThat("Type of var"+i+" should be a basic type", varInfo.getType(), is(instanceOf(BasicType.class)));
+            assertEquals("Type of var"+i+" should be " + expected[i], expected[i], ((BasicType) varInfo.getType()).getName());
+        }
+    }
+
+    @Test(expected = TypeMismatchException.class)
+    public void funcCallAssignmentWithDifferentTypesFails() throws IOException {
+        ASTCompileUnit program = generator.parseFile(resPath+"mistypedFuncCallAssignments.myun");
         ScopeInitializer.initScopes(program, MyunCoreScope.getInstance());
         TypeInferrer typeInferrer = new TypeInferrer();
         typeInferrer.inferTypes(program);

@@ -1,0 +1,9 @@
+script test
+    x := 0
+    for i from 5 to 10 do
+        x = x + i
+    end
+    i := 3
+    x = x + i
+    print(x) // 48
+end

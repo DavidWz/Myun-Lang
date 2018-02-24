@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * Compiles a myun source file to LLVM code.
  * @noinspection UseOfSystemOutOrSystemErr
  */
-final class MyunCompiler {
+final public class MyunCompiler {
     private static final String DEFAULT_LLVM_COMPILER = "llc";
     private static final String DEFAULT_ASSEMBLY_COMPILER = "gcc";
     private static final int DEFAULT_OPT_LEVEL = 0;
@@ -29,7 +29,7 @@ final class MyunCompiler {
         this.debug = debug;
     }
 
-    static MyunCompiler getDefaultMyunCompiler() {
+    public static MyunCompiler getDefaultMyunCompiler() {
         return new MyunCompiler(DEFAULT_LLVM_COMPILER, DEFAULT_ASSEMBLY_COMPILER, DEFAULT_OPT_LEVEL, false);
     }
 
@@ -65,7 +65,7 @@ final class MyunCompiler {
      * @return the output file path
      * @throws IOException thrown when the file could not be loaded or written to
      */
-    String compileFromFile(String inputFile) throws IOException, InterruptedException {
+    public String compileFromFile(String inputFile) throws IOException, InterruptedException {
         // generate the AST
         ASTGenerator astGen = new ASTGenerator();
         ASTCompileUnit program = astGen.parseFile(inputFile);

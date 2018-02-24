@@ -1,9 +1,6 @@
 package myun.AST;
 
-import myun.type.BasicType;
-import myun.type.FuncType;
-import myun.type.TypeVisitor;
-import myun.type.UnknownType;
+import myun.type.*;
 
 /**
  * Prints the AST in a readable format.
@@ -20,6 +17,11 @@ public class MyunPrettyPrinter implements ASTVisitor<String>, TypeVisitor<String
     }
 
     public String toString(ASTNode node) {
+        init();
+        return node.accept(this);
+    }
+
+    public String toString(MyunType node) {
         init();
         return node.accept(this);
     }
@@ -79,10 +81,10 @@ public class MyunPrettyPrinter implements ASTVisitor<String>, TypeVisitor<String
         }
 
         // print the else
-        if (node.hasElse()) {
+        node.getElseBlock().ifPresent(b -> {
             indent(sb);
-            sb.append("else\n").append(node.getElseBlock().accept(this));
-        }
+            sb.append("else\n").append(b.accept(this));
+        });
         indent(sb);
         sb.append("end\n");
 

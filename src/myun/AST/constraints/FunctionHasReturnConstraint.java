@@ -38,7 +38,7 @@ class FunctionHasReturnConstraint implements Constraint, ASTVisitor<Boolean> {
 
     @Override
     public Boolean visit(ASTBranch node) {
-        return node.hasElse() && node.getBlocks().stream().allMatch(block -> block.accept(this));
+        return node.getElseBlock().isPresent() && node.getBlocks().stream().allMatch(block -> block.accept(this));
     }
 
     @Override

@@ -60,88 +60,88 @@ public final class MyunCoreScope extends Scope {
 
     private void declareOperators() {
         declareAndSetLLVMOperator("and",
-                binaryFunction(PrimitiveTypes.MYUN_BOOL, PrimitiveTypes.MYUN_BOOL, PrimitiveTypes.MYUN_BOOL),
+                binaryFunction(PrimitiveTypes.MYUN_BOOL_NAME, PrimitiveTypes.MYUN_BOOL_NAME, PrimitiveTypes.MYUN_BOOL_NAME),
                 "and " + PrimitiveTypes.LLVM_BOOL);
         declareAndSetLLVMOperator("or",
-                binaryFunction(PrimitiveTypes.MYUN_BOOL, PrimitiveTypes.MYUN_BOOL, PrimitiveTypes.MYUN_BOOL),
+                binaryFunction(PrimitiveTypes.MYUN_BOOL_NAME, PrimitiveTypes.MYUN_BOOL_NAME, PrimitiveTypes.MYUN_BOOL_NAME),
                 "or " + PrimitiveTypes.LLVM_BOOL);
         declareAndSetLLVMOperator("is",
-                binaryFunction(PrimitiveTypes.MYUN_BOOL, PrimitiveTypes.MYUN_BOOL, PrimitiveTypes.MYUN_BOOL),
+                binaryFunction(PrimitiveTypes.MYUN_BOOL_NAME, PrimitiveTypes.MYUN_BOOL_NAME, PrimitiveTypes.MYUN_BOOL_NAME),
                 "icmp eq " + PrimitiveTypes.LLVM_BOOL);
 
         declareAndSetLLVMOperator("is",
-                binaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_BOOL),
+                binaryFunction(PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_BOOL_NAME),
                 "icmp eq " + PrimitiveTypes.LLVM_INT);
         declareAndSetLLVMOperator("isLess",
-                binaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_BOOL),
+                binaryFunction(PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_BOOL_NAME),
                 "icmp slt " + PrimitiveTypes.LLVM_INT);
         declareAndSetLLVMOperator("isLessEq",
-                binaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_BOOL),
+                binaryFunction(PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_BOOL_NAME),
                 "icmp sle " + PrimitiveTypes.LLVM_INT);
         declareAndSetLLVMOperator("isGreater",
-                binaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_BOOL),
+                binaryFunction(PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_BOOL_NAME),
                 "icmp sgt " + PrimitiveTypes.LLVM_INT);
         declareAndSetLLVMOperator("isGreaterEq",
-                binaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_BOOL),
+                binaryFunction(PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_BOOL_NAME),
                 "icmp sge " + PrimitiveTypes.LLVM_INT);
 
         declareAndSetLLVMOperator("plus",
-                binaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT),
+                binaryFunction(PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_INT_NAME),
                 "add " + PrimitiveTypes.LLVM_INT);
         declareAndSetLLVMOperator("minus",
-                binaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT),
+                binaryFunction(PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_INT_NAME),
                 "sub " + PrimitiveTypes.LLVM_INT);
         declareAndSetLLVMOperator("mult",
-                binaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT),
+                binaryFunction(PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_INT_NAME),
                 "mul " + PrimitiveTypes.LLVM_INT);
         declareAndSetLLVMOperator("div",
-                binaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT),
+                binaryFunction(PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_INT_NAME),
                 "sdiv " + PrimitiveTypes.LLVM_INT);
         declareAndSetLLVMOperator("mod",
-                binaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT),
+                binaryFunction(PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_INT_NAME),
                 "srem " + PrimitiveTypes.LLVM_INT);
 
         declareAndSetLLVMOperator("is",
-                binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_BOOL),
+                binaryFunction(PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_BOOL_NAME),
                 "fcmp oeq " + PrimitiveTypes.LLVM_FLOAT);
         declareAndSetLLVMOperator("isLess",
-                binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_BOOL),
+                binaryFunction(PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_BOOL_NAME),
                 "fcmp olt " + PrimitiveTypes.LLVM_FLOAT);
         declareAndSetLLVMOperator("isLessEq",
-                binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_BOOL),
+                binaryFunction(PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_BOOL_NAME),
                 "fcmp ole " + PrimitiveTypes.LLVM_FLOAT);
         declareAndSetLLVMOperator("isGreater",
-                binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_BOOL),
+                binaryFunction(PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_BOOL_NAME),
                 "fcmp ogt " + PrimitiveTypes.LLVM_FLOAT);
         declareAndSetLLVMOperator("isGreaterEq",
-                binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_BOOL),
+                binaryFunction(PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_BOOL_NAME),
                 "fcmp oge " + PrimitiveTypes.LLVM_FLOAT);
 
         declareAndSetLLVMOperator("plus",
-                binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT),
+                binaryFunction(PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_FLOAT_NAME),
                 "fadd " + PrimitiveTypes.LLVM_FLOAT);
         declareAndSetLLVMOperator("minus",
-                binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT),
+                binaryFunction(PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_FLOAT_NAME),
                 "fsub " + PrimitiveTypes.LLVM_FLOAT);
         declareAndSetLLVMOperator("mult",
-                binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT),
+                binaryFunction(PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_FLOAT_NAME),
                 "fmul " + PrimitiveTypes.LLVM_FLOAT);
         declareAndSetLLVMOperator("div",
-                binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT),
+                binaryFunction(PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_FLOAT_NAME),
                 "fdiv " + PrimitiveTypes.LLVM_FLOAT);
         declareAndSetLLVMOperator("mod",
-                binaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT),
+                binaryFunction(PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_FLOAT_NAME),
                 "frem " + PrimitiveTypes.LLVM_FLOAT);
 
         declareAndSetLLVMOperator("not",
-                unaryFunction(PrimitiveTypes.MYUN_BOOL, PrimitiveTypes.MYUN_BOOL),
+                unaryFunction(PrimitiveTypes.MYUN_BOOL_NAME, PrimitiveTypes.MYUN_BOOL_NAME),
                 "xor i1 true, ");
 
         declareAndSetLLVMOperator("negate",
-                unaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT),
+                unaryFunction(PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_INT_NAME),
                 "mul " + PrimitiveTypes.LLVM_INT + " -1, ");
         declareAndSetLLVMOperator("negate",
-                unaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_FLOAT),
+                unaryFunction(PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_FLOAT_NAME),
                 "fmul " + PrimitiveTypes.LLVM_FLOAT + " -1.0, ");
     }
 
@@ -150,13 +150,13 @@ public final class MyunCoreScope extends Scope {
         String printfInt = "call i32 (i8*, ...) @printf(i8* getelementptr inbounds " +
                 "([6 x i8], [6 x i8]* @.str, i32 0, i32 0),";
         declareAndSetLLVM("print",
-                unaryFunction(PrimitiveTypes.MYUN_INT, PrimitiveTypes.MYUN_INT),
+                unaryFunction(PrimitiveTypes.MYUN_INT_NAME, PrimitiveTypes.MYUN_INT_NAME),
                 new LLVMInstruction(printfInt, true, true));
 
         String printfFloat = "call i32 (i8*, ...) @printf(i8* getelementptr inbounds " +
                 "([7 x i8], [7 x i8]* @.str.1, i32 0, i32 0),";
         declareAndSetLLVM("print",
-                unaryFunction(PrimitiveTypes.MYUN_FLOAT, PrimitiveTypes.MYUN_INT),
+                unaryFunction(PrimitiveTypes.MYUN_FLOAT_NAME, PrimitiveTypes.MYUN_INT_NAME),
                 new LLVMInstruction(printfFloat, true, true));
     }
 

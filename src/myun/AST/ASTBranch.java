@@ -1,6 +1,7 @@
 package myun.AST;
 
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Represents a conditional branch.
@@ -24,12 +25,13 @@ public class ASTBranch extends ASTStatement {
         this.blocks = blocks;
     }
 
-    public boolean hasElse() {
-        return conditions.size() != blocks.size();
-    }
-
-    public ASTBlock getElseBlock() {
-        return blocks.get(blocks.size()-1);
+    public Optional<ASTBlock> getElseBlock() {
+        if (conditions.size() != blocks.size()) {
+            return Optional.of(blocks.get(blocks.size() - 1));
+        }
+        else {
+            return Optional.empty();
+        }
     }
 
     public List<ASTExpression> getConditions() {

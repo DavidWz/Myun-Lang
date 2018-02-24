@@ -186,8 +186,7 @@ public class ASTGenerator implements ANTLRErrorListener {
 
             ASTBlock block = ctx.block().accept(new BlockVisitor());
 
-            return new ASTFuncDef(getSourcePos(ctx.start), name, params, returnType,
-                    block);
+            return new ASTFuncDef(getSourcePos(ctx.start), name, params, returnType, block);
         }
     }
 

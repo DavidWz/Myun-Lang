@@ -1,0 +1,11 @@
+foo(x::Int, y::Float)::Boolean
+    if x+1 is 5 and y+1.0 < 4.0 then
+        return true
+    else
+        return false
+    end
+end
+
+script test
+    b0 := foo(4.0, 1)
+end

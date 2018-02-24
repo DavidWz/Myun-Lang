@@ -11,7 +11,7 @@ import static org.junit.Assert.assertThat;
 /**
  * Executes Myun binaries.
  */
-final class CodeRunner {
+public final class CodeRunner {
     private CodeRunner() {
     }
 
@@ -39,7 +39,7 @@ final class CodeRunner {
      * @param fileName the myun file
      * @return an array of output lines
      */
-    static String[] executeAndGetOutput(String fileName) throws IOException, InterruptedException {
+    public static String[] executeAndGetOutput(String fileName) throws IOException, InterruptedException {
         ExecutionResult result = CodeRunner.runMyunFile(fileName);
         assertThat("Exit status should be 0.", 0, is(result.getExitStatus()));
         assertThat("There should be no error.", "", is(result.getErrors()));
