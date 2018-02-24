@@ -4,8 +4,8 @@ package myun.AST;
  * Represents an assignment of an expression to a variable.
  */
 public class ASTAssignment extends ASTStatement {
-    private final ASTVariable variable;
-    private final ASTExpression expr;
+    private ASTVariable variable;
+    private ASTExpression expr;
 
     /**
      * Creates a new AST assignment.
@@ -24,12 +24,25 @@ public class ASTAssignment extends ASTStatement {
         return variable;
     }
 
+    public void setVariable(ASTVariable variable) {
+        this.variable = variable;
+    }
+
     public ASTExpression getExpr() {
         return expr;
+    }
+
+    public void setExpr(ASTExpression expr) {
+        this.expr = expr;
     }
 
     @Override
     public <T> T accept(ASTVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public void accept(ASTNonExpressionVisitor visitor) {
+        visitor.visit(this);
     }
 }

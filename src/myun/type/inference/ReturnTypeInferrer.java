@@ -2,15 +2,22 @@ package myun.type.inference;
 
 import myun.AST.*;
 import myun.type.MyunType;
+import myun.type.UnknownType;
 
 /**
  * Checks if all expressions in function return statements are of the same type as the declared function return type.
  */
-final class ReturnTypeChecker implements ASTVisitor<Void> {
-    private final MyunType targetType;
+final class ReturnTypeInferrer implements ASTVisitor<Void> {
+    private MyunType currentType;
 
-    ReturnTypeChecker(ASTFuncDef node) {
-        targetType = node.getReturnType();
+    ReturnTypeInferrer() {
+        currentType = new UnknownType();
+    }
+
+    MyunType inferReturnType(ASTFuncDef funcDef) {
+        currentType = funcDef.getReturnType();
+        funcDef.accept(this);
+        return currentType;
     }
 
     @Override
@@ -64,9 +71,9 @@ final class ReturnTypeChecker implements ASTVisitor<Void> {
     @Override
     public Void visit(ASTFuncReturn node) {
         MyunType returnType = node.getExpr().getType();
-        if (!returnType.equals(targetType)) {
-            throw new TypeMismatchException(returnType, targetType, node.getExpr().getSourcePosition());
-        }
+        currentType = TypeUnifier.unify(currentType, returnType).
+                orElseThrow(() -> new TypeMismatchException(returnType, currentType, node.getExpr().getSourcePosition()));
+
         return null;
     }
 

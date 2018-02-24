@@ -38,6 +38,10 @@ public class ASTBranch extends ASTStatement {
         return conditions;
     }
 
+    public void setCondition(int i, ASTExpression condition) {
+        conditions.set(i, condition);
+    }
+
     public List<ASTBlock> getBlocks() {
         return blocks;
     }
@@ -45,5 +49,10 @@ public class ASTBranch extends ASTStatement {
     @Override
     public <T> T accept(ASTVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public void accept(ASTNonExpressionVisitor visitor) {
+        visitor.visit(this);
     }
 }

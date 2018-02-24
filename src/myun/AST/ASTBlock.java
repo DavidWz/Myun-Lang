@@ -43,4 +43,8 @@ public class ASTBlock extends ASTNode {
     public <T> T accept(ASTVisitor<T> visitor) {
         return visitor.visit(this);
     }
+
+    public void accept(ASTNonExpressionVisitor visitor) {
+        visitor.visit(this);
+    }
 }

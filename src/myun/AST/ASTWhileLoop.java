@@ -4,7 +4,7 @@ package myun.AST;
  * Represents a while loop.
  */
 public class ASTWhileLoop extends ASTStatement {
-    private final ASTExpression condition;
+    private ASTExpression condition;
     private final ASTBlock block;
 
     /**
@@ -24,6 +24,10 @@ public class ASTWhileLoop extends ASTStatement {
         return condition;
     }
 
+    public void setCondition(ASTVariable condition) {
+        this.condition = condition;
+    }
+
     public ASTBlock getBlock() {
         return block;
     }
@@ -31,5 +35,10 @@ public class ASTWhileLoop extends ASTStatement {
     @Override
     public <T> T accept(ASTVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public void accept(ASTNonExpressionVisitor visitor) {
+        visitor.visit(this);
     }
 }

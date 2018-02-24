@@ -5,6 +5,7 @@ package myun.AST;
  */
 public class ASTVariable extends ASTExpression {
     private final String name;
+    private boolean isAssignable;
 
     /**
      * Creates a new AST variable.
@@ -15,10 +16,19 @@ public class ASTVariable extends ASTExpression {
     public ASTVariable(SourcePosition sourcePos, String name) {
         super(sourcePos);
         this.name = name;
+        this.isAssignable = false;
     }
 
     public String getName() {
         return name;
+    }
+
+    public boolean isAssignable() {
+        return isAssignable;
+    }
+
+    public void setAssignable(boolean isAssignable) {
+        this.isAssignable = isAssignable;
     }
 
     @Override
@@ -44,5 +54,10 @@ public class ASTVariable extends ASTExpression {
     @Override
     public int hashCode() {
         return name.hashCode();
+    }
+
+    @Override
+    public <T> T accept(ASTExpressionVisitor<T> visitor) {
+        return visitor.visit(this);
     }
 }

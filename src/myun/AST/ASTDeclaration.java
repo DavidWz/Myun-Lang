@@ -5,7 +5,7 @@ package myun.AST;
  */
 public class ASTDeclaration extends ASTStatement {
     private final ASTVariable variable;
-    private final ASTExpression expr;
+    private ASTExpression expr;
 
     /**
      * Creates a new AST declaration.
@@ -28,8 +28,17 @@ public class ASTDeclaration extends ASTStatement {
         return expr;
     }
 
+    public void setExpr(ASTExpression expr) {
+        this.expr = expr;
+    }
+
     @Override
     public <T> T accept(ASTVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public void accept(ASTNonExpressionVisitor visitor) {
+        visitor.visit(this);
     }
 }

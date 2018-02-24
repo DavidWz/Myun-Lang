@@ -6,7 +6,6 @@ import myun.AST.ASTVariable;
 import myun.AST.SourcePosition;
 import myun.scope.MyunCoreScope;
 import myun.scope.ScopeInitializer;
-import myun.scope.VariableInfo;
 import myun.type.BasicType;
 import myun.type.PrimitiveTypes;
 import org.junit.Before;
@@ -42,9 +41,9 @@ public class AssignmentTypeSafetyTest {
         typeInferrer.inferTypes(program);
 
         for (int i = 1; i <= 3; i++) {
-            VariableInfo varInfo = program.getScript().getBlock().getScope().getVarInfo(new ASTVariable(new SourcePosition(), "var"+i));
-            assertThat("Type of var"+i+" should be a basic type", varInfo.getType(), is(instanceOf(BasicType.class)));
-            assertEquals("Type of var"+i+" should Int", PrimitiveTypes.MYUN_INT_NAME, ((BasicType) varInfo.getType()).getName());
+            ASTVariable var = program.getScript().getBlock().getScope().getActualVariable(new ASTVariable(new SourcePosition(), "var"+i));
+            assertThat("Type of var"+i+" should be a basic type", var.getType(), is(instanceOf(BasicType.class)));
+            assertEquals("Type of var"+i+" should Int", PrimitiveTypes.MYUN_INT_NAME, ((BasicType) var.getType()).getName());
         }
     }
 
@@ -69,9 +68,9 @@ public class AssignmentTypeSafetyTest {
                 PrimitiveTypes.MYUN_INT_NAME};
 
         for (int i = 0; i < 4; i++) {
-            VariableInfo varInfo = program.getScript().getBlock().getScope().getVarInfo(new ASTVariable(new SourcePosition(), "var"+i));
-            assertThat("Type of var"+i+" should be a basic type", varInfo.getType(), is(instanceOf(BasicType.class)));
-            assertEquals("Type of var"+i+" should be " + expected[i], expected[i], ((BasicType) varInfo.getType()).getName());
+            ASTVariable var = program.getScript().getBlock().getScope().getActualVariable(new ASTVariable(new SourcePosition(), "var"+i));
+            assertThat("Type of var"+i+" should be a basic type", var.getType(), is(instanceOf(BasicType.class)));
+            assertEquals("Type of var"+i+" should be " + expected[i], expected[i], ((BasicType) var.getType()).getName());
         }
     }
 

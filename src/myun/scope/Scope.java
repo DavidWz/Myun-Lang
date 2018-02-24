@@ -3,16 +3,17 @@ package myun.scope;
 import myun.AST.*;
 import myun.type.FuncHeader;
 import myun.type.FuncType;
-import myun.type.MyunType;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Represents the scope of a code block.
+ * TODO: Why difference between variables and functions? functions are variables too...
  */
 public class Scope {
     private final Scope parent;
-    private final Map<ASTVariable, VariableInfo> declaredVariables;
+    private final Set<ASTVariable> declaredVariables;
     private final Map<FuncHeader, FunctionInfo> declaredFunctions;
 
     /**
@@ -22,7 +23,7 @@ public class Scope {
      */
     public Scope(Scope parent) {
         this.parent = parent;
-        declaredVariables = new HashMap<>();
+        declaredVariables = new HashSet<>();
         declaredFunctions = new HashMap<>();
     }
 
@@ -32,74 +33,49 @@ public class Scope {
      * @param var the variable
      * @return true iff the variable has been declared
      */
-    public boolean isDeclared(ASTVariable var) {
-        return declaredVariables.containsKey(var) || ((parent != null) && parent.isDeclared(var));
+    private boolean isDeclared(ASTVariable var) {
+        return declaredVariables.contains(var) || ((parent != null) && parent.isDeclared(var));
     }
 
     /**
      * Declares the variable in the current scope.
-     * Additionally, sets the type of the variable to the type of the expression.
      * Can only be called when the variable has not been declared already.
      *
-     * @param varInfo the variable information
+     * @param variable the variable information
      * @throws IllegalRedefineException thrown when the variable has been declared in this scope already
      */
-    public void declareVariable(ASTVariable variable, VariableInfo varInfo) {
+    void declareVariable(ASTVariable variable) {
         // check for illegal redefinition of the variable
         if (isDeclared(variable)) {
             throw new IllegalRedefineException(variable.getName(),
-                    getVarInfo(variable).getDeclaration().getSourcePosition(),
-                    varInfo.getDeclaration().getSourcePosition());
-        }
-        else if (!varInfo.getType().isFullyKnown()) {
-            throw new TypeNotInferredException(variable.getSourcePosition());
+                    getActualVariable(variable).getSourcePosition(),
+                    variable.getSourcePosition());
         }
         else {
             // add variable to declarations and update type of lhs
-            declaredVariables.put(variable, varInfo);
-            variable.setType(varInfo.getType());
+            declaredVariables.add(variable);
         }
     }
 
     /**
-     * Declares the variable in the current scope.
-     * Additionally, sets the type of the variable to the type of the expression.
-     * Can only be called when the variable has not been declared already.
-     * Furthermore, the type of the right-hand-side expression needs to have been inferred already.
-     *
-     * @param declaration the variable declaration
-     * @throws IllegalRedefineException thrown when the variable has been declared in this scope already
-     * @throws TypeNotInferredException thrown when the type of the expression has not been inferred yet
-     */
-    public void declareVariable(ASTDeclaration declaration) {
-        MyunType type = declaration.getExpr().getType();
-        if (!type.isFullyKnown()) {
-            throw new TypeNotInferredException(declaration.getExpr().getSourcePosition());
-        }
-
-        // user made declarations are always assignable
-        VariableInfo varInfo = new VariableInfo(type, true, declaration);
-        declareVariable(declaration.getVariable(), varInfo);
-    }
-
-    /**
-     * Retrieves the variable info for the variable.
+     * Retrieves the actual variable object refered to by the name of the given variable object.
      * The variable must be declared in this scope.
      *
-     * @param var the variable
-     * @return the variable info
-     * @throws UndeclaredVariableUsedException thrown when var is not declared in this scope
+     * @param copyVar the variable object that holds the name of the actual variable
+     * @return the variable object
      */
-    public VariableInfo getVarInfo(ASTVariable var) {
-        // search for the variable info in this scope
-        if (declaredVariables.containsKey(var)) {
-            return declaredVariables.get(var);
+    public ASTVariable getActualVariable(ASTVariable copyVar) {
+        for (ASTVariable var : declaredVariables) {
+            if (var.equals(copyVar)) {
+                return var;
+            }
         }
-        else if (parent != null) {
-            // search for it in the parent scope
-            return parent.getVarInfo(var);
-        } else {
-            throw new UndeclaredVariableUsedException(var);
+
+        if (parent != null) {
+            return parent.getActualVariable(copyVar);
+        }
+        else {
+            throw new UndeclaredVariableUsedException(copyVar);
         }
     }
 
@@ -129,9 +105,6 @@ public class Scope {
             throw new IllegalRedefineException(funcHeader.getName(),
                     getFunctionInfo(funcHeader, funcDef.getSourcePosition()).getFuncDef().getSourcePosition(),
                     funcDef.getSourcePosition());
-        }
-        else if (!funcDef.getType().isFullyKnown()) {
-            throw new TypeNotInferredException(funcDef.getSourcePosition());
         }
         else {
             declaredFunctions.put(funcHeader, new FunctionInfo(funcDef.getType(), funcDef));
@@ -174,5 +147,23 @@ public class Scope {
         else {
             throw new UndeclaredFunctionCalledException(funcHeader, sourcePos);
         }
+    }
+
+    /**
+     * Returns all known declared types for the function with the given name.
+     * @param function the name of the function
+     * @return all known types
+     */
+    public Collection<FuncType> getDeclaredFunctionTypes(String function) {
+        Collection<FuncType> knownTypes = declaredFunctions.keySet().stream().
+                filter(header -> function.equals(header.getName())).
+                map(header -> declaredFunctions.get(header).getType()).
+                collect(Collectors.toCollection(HashSet::new));
+
+        if (parent != null) {
+            knownTypes.addAll(parent.getDeclaredFunctionTypes(function));
+        }
+
+        return knownTypes;
     }
 }

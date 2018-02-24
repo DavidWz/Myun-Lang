@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
  * Visit methods for types simply return their LLVM type name.
  * </p>
  */
-class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
+class MyunToLLVMTranslator implements ASTExpressionVisitor<String>, ASTNonExpressionVisitor, TypeVisitor<String> {
     // stores the index of the next free register
     private int nextRegister;
 
@@ -111,7 +111,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         String val = expr.accept(this);
 
         if ((expr instanceof ASTFuncCall) ||
-                ((expr instanceof ASTVariable) && expr.getScope().getVarInfo((ASTVariable) expr).isAssignable())) {
+                ((expr instanceof ASTVariable) && expr.getScope().getActualVariable((ASTVariable) expr).isAssignable())) {
             String tmp = getNextRegister();
             llvmCode.append('\t').append(tmp).append(" = ").append(val).append('\n');
             val = tmp;
@@ -153,7 +153,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
     }
 
     @Override
-    public String visit(ASTAssignment node) {
+    public void visit(ASTAssignment node) {
         // compute the expression value and type
         String exprVal = getConstantOrRegister(node.getExpr());
         String varName = node.getVariable().getName();
@@ -162,8 +162,6 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         // store the expression in the stack variable
         llvmCode.append("\tstore ").append(type).append(' ').append(exprVal).append(", ").
                 append(type).append("* %").append(varName).append('\n');
-
-        return null;
     }
 
     @Override
@@ -183,16 +181,14 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
     }
 
     @Override
-    public String visit(ASTBlock node) {
+    public void visit(ASTBlock node) {
         node.getStatements().forEach(stmt -> stmt.accept(this));
         node.getFuncReturn().ifPresent(funcRet -> funcRet.accept(this));
         node.getLoopBreak().ifPresent(loopBreak -> loopBreak.accept(this));
-
-        return null;
     }
 
     @Override
-    public String visit(ASTBranch node) {
+    public void visit(ASTBranch node) {
         // suffix for the labels unique for this branch
         int labelID = getNextLabelID();
 
@@ -227,16 +223,12 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         llvmCode.append("\tbr label %ifCont").append(labelID).append('\n');
         llvmCode.append("ifCont").append(labelID).append(":\n");
         prevLabel = "ifCont" + labelID;
-
-        return null;
     }
 
     @Override
-    public String visit(ASTCompileUnit node) {
+    public void visit(ASTCompileUnit node) {
         node.getFuncDefs().forEach(funcDef -> funcDef.accept(this));
         node.getScript().accept(this);
-
-        return null;
     }
 
     @Override
@@ -245,7 +237,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
     }
 
     @Override
-    public String visit(ASTDeclaration node) {
+    public void visit(ASTDeclaration node) {
         // compute the expression value and type
         String exprVal = getConstantOrRegister(node.getExpr());
         String varName = node.getVariable().getName();
@@ -257,12 +249,10 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         // initialize the value
         llvmCode.append("\tstore ").append(type).append(' ').append(exprVal).append(", ").
                 append(type).append("* %").append(varName).append('\n');
-
-        return null;
     }
 
     @Override
-    public String visit(ASTForLoop node) {
+    public void visit(ASTForLoop node) {
         String nextIt = getNextRegister();
         String itVar = getNewRegisterForItVar(node.getVariable());
         String itType = node.getVariable().getType().accept(this);
@@ -308,8 +298,6 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         llvmCode.append("loopCont").append(labelID).append(":\n");
         prevLabel = "loopCont" + labelID;
         currentLoopExit.pop();
-
-        return null;
     }
 
     @Override
@@ -357,7 +345,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
     }
 
     @Override
-    public String visit(ASTFuncDef node) {
+    public void visit(ASTFuncDef node) {
         FuncHeader header = new FuncHeader(node.getName(),
                 node.getParameters().stream().map(ASTExpression::getType).collect(Collectors.toList()));
 
@@ -385,16 +373,13 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
 
         llvmCode.append("\tunreachable\n");
         llvmCode.append("}\n\n");
-
-        return null;
     }
 
     @Override
-    public String visit(ASTFuncReturn node) {
+    public void visit(ASTFuncReturn node) {
         MyunType retType = node.getExpr().getType();
         String retVal = getConstantOrRegister(node.getExpr());
         llvmCode.append("\tret ").append(retType.accept(this)).append(' ').append(retVal).append('\n');
-        return null;
     }
 
     @Override
@@ -408,13 +393,17 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
     }
 
     @Override
-    public String visit(ASTLoopBreak node) {
-        llvmCode.append("\tbr label %").append(currentLoopExit.peek()).append('\n');
-        return null;
+    public String visit(VariantType type) {
+        throw new NotImplementedException("variant types", new SourcePosition());
     }
 
     @Override
-    public String visit(ASTScript node) {
+    public void visit(ASTLoopBreak node) {
+        llvmCode.append("\tbr label %").append(currentLoopExit.peek()).append('\n');
+    }
+
+    @Override
+    public void visit(ASTScript node) {
         // the script is our main function and always returns 0
         llvmCode.append("define ").append(PrimitiveTypes.LLVM_INT).append(" @main() {\n");
         llvmCode.append("entry:\n");
@@ -422,24 +411,20 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         node.getBlock().accept(this);
         llvmCode.append("\tret ").append(PrimitiveTypes.LLVM_INT).append(" 0\n");
         llvmCode.append("}\n");
-
-        return null;
     }
 
     @Override
-    public String visit(ASTProcCall node) {
+    public void visit(ASTProcCall node) {
         // get a dummy register
         String tmp = getNextRegister();
         String callVal = node.getFuncCall().accept(this);
 
         llvmCode.append('\t').append(tmp).append(" = ").append(callVal).append('\n');
-
-        return null;
     }
 
     @Override
     public String visit(ASTVariable node) {
-        if (node.getScope().getVarInfo(node).isAssignable()) {
+        if (node.isAssignable()) {
             // for mutable variables we need to load the value from the stack
             String type = node.getType().accept(this);
             return "load " + type + ", " +  type + "* %" + node.getName();
@@ -457,7 +442,7 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
     }
 
     @Override
-    public String visit(ASTWhileLoop node) {
+    public void visit(ASTWhileLoop node) {
         int labelID = getNextLabelID();
 
         // start the loop
@@ -487,7 +472,5 @@ class MyunToLLVMTranslator implements ASTVisitor<String>, TypeVisitor<String> {
         llvmCode.append("loopCont").append(labelID).append(":\n");
         prevLabel = "loopCont" + labelID;
         currentLoopExit.pop();
-
-        return null;
     }
 }

@@ -12,4 +12,10 @@ public abstract class ASTStatement extends ASTNode {
     ASTStatement(SourcePosition sourcePosition) {
         super(sourcePosition);
     }
+
+    /**
+     * Visits a given AST non-expression visitor.
+     * @param visitor the AST visitor
+     */
+    public abstract void accept(ASTNonExpressionVisitor visitor);
 }

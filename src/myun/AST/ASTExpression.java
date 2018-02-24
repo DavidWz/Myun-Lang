@@ -26,4 +26,6 @@ public abstract class ASTExpression extends ASTNode {
     public void setType(MyunType type) {
         this.type = type;
     }
+
+    public abstract <T> T accept(ASTExpressionVisitor<T> visitor);
 }

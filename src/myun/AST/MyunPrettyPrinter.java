@@ -7,17 +7,26 @@ import myun.type.*;
  */
 public class MyunPrettyPrinter implements ASTVisitor<String>, TypeVisitor<String> {
     private int indentLevel;
+    private boolean printTypes;
 
     public MyunPrettyPrinter() {
         init();
+        printTypes = false;
     }
 
     private void init() {
         indentLevel = 0;
+        printTypes = false;
     }
 
     public String toString(ASTNode node) {
         init();
+        return node.accept(this);
+    }
+
+    public String debug(ASTNode node) {
+        init();
+        printTypes = true;
         return node.accept(this);
     }
 
@@ -101,7 +110,11 @@ public class MyunPrettyPrinter implements ASTVisitor<String>, TypeVisitor<String
 
     @Override
     public <CT> String visit(ASTConstant<CT> node) {
-        return node.getValue().toString();
+        String result = node.getValue().toString();
+        if (printTypes) {
+            result += "::" + node.getType().accept(this);
+        }
+        return result;
     }
 
     @Override
@@ -145,6 +158,9 @@ public class MyunPrettyPrinter implements ASTVisitor<String>, TypeVisitor<String
             }
         }
         sb.append(')');
+        if (printTypes) {
+            sb.append("::").append(node.getType().accept(this));
+        }
         return sb.toString();
     }
 
@@ -163,7 +179,10 @@ public class MyunPrettyPrinter implements ASTVisitor<String>, TypeVisitor<String
             }
         }
         sb.append(')');
-        sb.append(node.getReturnType().accept(this));
+
+        if (printTypes) {
+            sb.append("::").append(node.getReturnType().accept(this));
+        }
 
         sb.append('\n').append(node.getBlock().accept(this));
         indent(sb);
@@ -205,6 +224,21 @@ public class MyunPrettyPrinter implements ASTVisitor<String>, TypeVisitor<String
     }
 
     @Override
+    public String visit(VariantType type) {
+        StringBuilder sb = new StringBuilder();
+        sb.append('<');
+        for (int i = 0; i < type.getVariants().size(); i++) {
+            sb.append(type.getVariants().get(i).accept(this));
+
+            if (i < (type.getVariants().size() - 1)) {
+                sb.append(" | ");
+            }
+        }
+        sb.append('>');
+        return sb.toString();
+    }
+
+    @Override
     public String visit(ASTLoopBreak node) {
         StringBuilder sb = new StringBuilder();
         indent(sb);
@@ -224,8 +258,11 @@ public class MyunPrettyPrinter implements ASTVisitor<String>, TypeVisitor<String
 
     @Override
     public String visit(ASTVariable node) {
-        return node.getName() +
-                "::" + node.getType().accept(this);
+        String result = node.getName();
+        if (printTypes) {
+            result += "::" + node.getType().accept(this);
+        }
+        return result;
     }
 
     @Override

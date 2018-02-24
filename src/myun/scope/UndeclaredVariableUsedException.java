@@ -7,11 +7,11 @@ import myun.MyunException;
 /**
  * Thrown when a variable is used which has not been declared.
  */
-public class UndeclaredVariableUsedException extends MyunException {
+class UndeclaredVariableUsedException extends MyunException {
     private final ASTVariable variable;
     private final MyunPrettyPrinter prettyPrinter;
 
-    public UndeclaredVariableUsedException(ASTVariable variable) {
+    UndeclaredVariableUsedException(ASTVariable variable) {
         super(variable.getSourcePosition());
         this.variable = variable;
         prettyPrinter = new MyunPrettyPrinter();

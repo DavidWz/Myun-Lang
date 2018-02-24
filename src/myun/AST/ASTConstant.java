@@ -25,4 +25,9 @@ public class ASTConstant<CT> extends ASTExpression {
     public <T> T accept(ASTVisitor<T> visitor) {
         return visitor.visit(this);
     }
+
+    @Override
+    public <T> T accept(ASTExpressionVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
 }

@@ -44,8 +44,17 @@ public class ASTFuncCall extends ASTExpression {
         return args;
     }
 
+    public void setArg(int i, ASTVariable actualVariable) {
+        args.set(i, actualVariable);
+    }
+
     @Override
     public <T> T accept(ASTVisitor<T> visitor) {
+        return visitor.visit(this);
+    }
+
+    @Override
+    public <T> T accept(ASTExpressionVisitor<T> visitor) {
         return visitor.visit(this);
     }
 }

@@ -6,8 +6,8 @@ import java.util.List;
  * Represents a function type.
  */
 public class FuncType implements MyunType {
-    private List<MyunType> parameterTypes;
-    private MyunType returnType;
+    private final List<MyunType> parameterTypes;
+    private final MyunType returnType;
 
     /**
      * Creates a new AST type.
@@ -26,14 +26,6 @@ public class FuncType implements MyunType {
 
     public MyunType getReturnType() {
         return returnType;
-    }
-
-    public void setParameterTypes(List<MyunType> parameterTypes) {
-        this.parameterTypes = parameterTypes;
-    }
-
-    public void setReturnType(MyunType returnType) {
-        this.returnType = returnType;
     }
 
     @Override

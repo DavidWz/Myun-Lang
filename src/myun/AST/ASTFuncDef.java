@@ -12,7 +12,8 @@ import java.util.stream.Collectors;
 public class ASTFuncDef extends ASTNode {
     private final String name;
     private final List<ASTVariable> parameters;
-    private final MyunType returnType;
+    private MyunType returnType;
+
     private final ASTBlock block;
 
     /**
@@ -46,6 +47,10 @@ public class ASTFuncDef extends ASTNode {
         return returnType;
     }
 
+    public void setReturnType(MyunType returnType) {
+        this.returnType = returnType;
+    }
+
     public ASTBlock getBlock() {
         return block;
     }
@@ -64,5 +69,9 @@ public class ASTFuncDef extends ASTNode {
     @Override
     public <T> T accept(ASTVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    public void accept(ASTNonExpressionVisitor visitor) {
+        visitor.visit(this);
     }
 }

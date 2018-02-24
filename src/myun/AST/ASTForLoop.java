@@ -5,8 +5,8 @@ package myun.AST;
  */
 public class ASTForLoop extends ASTStatement {
     private final ASTVariable variable;
-    private final ASTExpression from;
-    private final ASTExpression to;
+    private ASTExpression from;
+    private ASTExpression to;
     private final ASTBlock block;
 
     /**
@@ -43,8 +43,21 @@ public class ASTForLoop extends ASTStatement {
         return block;
     }
 
+    public void setFrom(ASTExpression from) {
+        this.from = from;
+    }
+
+    public void setTo(ASTExpression to) {
+        this.to = to;
+    }
+
     @Override
     public <T> T accept(ASTVisitor<T> visitor) {
         return visitor.visit(this);
+    }
+
+    @Override
+    public void accept(ASTNonExpressionVisitor visitor) {
+        visitor.visit(this);
     }
 }
