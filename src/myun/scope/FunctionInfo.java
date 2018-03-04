@@ -2,6 +2,7 @@ package myun.scope;
 
 import myun.AST.ASTFuncDef;
 import myun.type.FuncType;
+import myun.type.MyunType;
 
 /**
  * Stores information about functions.
@@ -24,5 +25,9 @@ public class FunctionInfo {
 
     public ASTFuncDef getFuncDef() {
         return originalDefinition;
+    }
+
+    public void setReturnType(MyunType returnType) {
+        type.setReturnType(returnType);
     }
 }

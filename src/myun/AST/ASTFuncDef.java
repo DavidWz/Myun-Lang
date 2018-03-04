@@ -1,5 +1,6 @@
 package myun.AST;
 
+import myun.type.FuncHeader;
 import myun.type.FuncType;
 import myun.type.MyunType;
 
@@ -56,14 +57,19 @@ public class ASTFuncDef extends ASTNode {
     }
 
     /**
-     * Returns the type of this function.
-     * All parameter types and the return type have
-     *
      * @return the type of this function
      */
     public FuncType getType() {
         List<MyunType> paramTypes = parameters.stream().map(ASTExpression::getType).collect(Collectors.toList());
         return new FuncType(paramTypes, returnType);
+    }
+
+    /**
+     * @return the header of this function
+     */
+    public FuncHeader getHeader() {
+        List<MyunType> paramTypes = parameters.stream().map(ASTExpression::getType).collect(Collectors.toList());
+        return new FuncHeader(name, paramTypes);
     }
 
     @Override

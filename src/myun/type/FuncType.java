@@ -7,7 +7,7 @@ import java.util.List;
  */
 public class FuncType implements MyunType {
     private final List<MyunType> parameterTypes;
-    private final MyunType returnType;
+    private MyunType returnType;
 
     /**
      * Creates a new AST type.
@@ -58,5 +58,9 @@ public class FuncType implements MyunType {
         int result = parameterTypes.hashCode();
         result = (31 * result) + returnType.hashCode();
         return result;
+    }
+
+    public void setReturnType(MyunType returnType) {
+        this.returnType = returnType;
     }
 }

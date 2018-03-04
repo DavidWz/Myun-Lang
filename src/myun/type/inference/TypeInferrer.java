@@ -4,9 +4,6 @@ import myun.AST.*;
 import myun.scope.IllegalRedefineException;
 import myun.type.*;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 /**
  * Infers types of expressions and functions.
  */
@@ -111,9 +108,7 @@ public class TypeInferrer implements ASTNonExpressionVisitor {
      * @param node the function definition
      */
     private void declareFunction(ASTFuncDef node) {
-        // retrieve the type of this function
-        List<MyunType> paramTypes = node.getParameters().stream().map(ASTExpression::getType).collect(Collectors.toList());
-        FuncHeader funcHeader = new FuncHeader(node.getName(), paramTypes);
+        FuncHeader funcHeader = node.getHeader();
 
         // make sure this function has not been declared yet
         if (node.getScope().isDeclared(funcHeader)) {
@@ -134,7 +129,11 @@ public class TypeInferrer implements ASTNonExpressionVisitor {
         node.getBlock().accept(this);
 
         // check if all the return expression types match the actual return type
-        node.setReturnType(returnTypeInferrer.inferReturnType(node));
+        final MyunType inferedReturnType = returnTypeInferrer.inferReturnType(node);
+        MyunType actualReturnType = TypeUnifier.unify(node.getReturnType(), inferedReturnType).
+                orElseThrow(() -> new TypeMismatchException(inferedReturnType, node.getReturnType(), node.getSourcePosition()));
+        node.setReturnType(actualReturnType);
+        node.getScope().getFunctionInfo(node.getHeader(), node.getSourcePosition()).setReturnType(actualReturnType);
     }
 
     @Override

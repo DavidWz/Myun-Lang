@@ -133,8 +133,8 @@ public class Scope {
      * The function must have been defined already.
      *
      * @param funcHeader the function header
-     * @return the function information
      * @param sourcePos the position where this function was declared
+     * @return the function information
      * @throws UndeclaredFunctionCalledException thrown when the function has not been declared
      */
     public FunctionInfo getFunctionInfo(FuncHeader funcHeader, SourcePosition sourcePos) {

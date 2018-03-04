@@ -6,6 +6,7 @@ import myun.scope.Scope;
 import myun.scope.ScopeInitializer;
 import myun.type.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.io.File;
@@ -19,6 +20,7 @@ import static org.junit.Assert.*;
 /**
  * Tests the inference of function parameter and return types.
  */
+@Ignore
 public class FunctionTypeInferenceTest {
     private ASTGenerator generator;
     private String resPath;
